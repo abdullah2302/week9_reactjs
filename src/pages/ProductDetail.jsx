@@ -9,8 +9,10 @@ import EmptyState from "../components/EmptyState";
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart } = useCart();
+    const { addToCart, updateQty, cartItems } = useCart();
     const product = initialProducts.find((p) => p.id === Number(id));
+    const cartItem = cartItems.find((item) => item.id === product.id);
+    const quantity = cartItem?.qty || 0;
 
     useEffect(() => {
         if (!product)
@@ -25,19 +27,19 @@ function ProductDetail() {
 
     if (!product) {
         return (
-           <EmptyState>
-            <FontAwesomeIcon
-                icon={faCircleExclamation}
-                className="mb-4 text-3xl text-slate-300"
-            />
-            <p className="mb-6 text-slate-500">Product not found.</p>
-            <Link
-                to="/products"
-                className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
-            >
-                Browse Products
-            </Link>
-           </EmptyState>
+            <EmptyState>
+                <FontAwesomeIcon
+                    icon={faCircleExclamation}
+                    className="mb-4 text-3xl text-slate-300"
+                />
+                <p className="mb-6 text-slate-500">Product not found.</p>
+                <Link
+                    to="/products"
+                    className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                    Browse Products
+                </Link>
+            </EmptyState>
         );
     }
 
@@ -80,14 +82,35 @@ function ProductDetail() {
                         ${product.price}
                     </div>
 
-                    <button
-                        onClick={() => addToCart(product)}
-                        className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-                    >
-                        <FontAwesomeIcon icon={faCartPlus} />
-                        Add to Cart
-                    </button>
+                    {quantity === 0 ? (
+                        <button
+                            onClick={() => addToCart(product)}
+                            className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                        >
+                            <FontAwesomeIcon icon={faCartPlus} />
+                            Add to Cart
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => updateQty(product.id, quantity - 1)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+                            >
+                                −
+                            </button>
 
+                            <span className="w-5 text-center font-medium">
+                                {quantity}
+                            </span>
+
+                            <button
+                                onClick={() => updateQty(product.id, quantity + 1)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+                            >
+                                +
+                            </button>
+                        </div>
+                    )}
                     <div className="mt-8 space-y-2 border-t border-slate-100 pt-6 text-sm text-slate-500">
                         <p>Free delivery on orders over $50</p>
                         <p>1-year warranty included</p>
