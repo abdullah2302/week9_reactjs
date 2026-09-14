@@ -4,38 +4,43 @@ import { faArrowLeft, faCartPlus, faCircleExclamation } from '@fortawesome/free-
 import initialProducts from "../data/products.json";
 import { useCart } from "../context/CartContext";
 import { useEffect } from "react";
+import EmptyState from "../components/EmptyState";
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
 
-   
+
 
     const product = initialProducts.find((p) => p.id === Number(id));
 
-     useEffect(() => {
-    if (!product) return;
+    useEffect(() => {
+        if (!product)
+            return;
 
-    document.title = `${product.name} · Shoply`;
+        document.title = `${product.name} · Shoply`;
 
-    return () => {
-        document.title = "Shoply";
-    };
-}, [product]);
+        return () => {
+            document.title = "Shoply";
+        };
+    }, [product]);
 
     if (!product) {
         return (
-            <div className="mx-auto max-w-6xl px-4 py-24 text-center">
-                <FontAwesomeIcon
-                    icon={faCircleExclamation}
-                    className="mb-4 text-3xl text-slate-300"
-                />
-                <p className="mb-4 text-slate-500">Product not found.</p>
-                <Link to="/products" className="text-sm text-slate-900 underline">
-                    Back to products
-                </Link>
-            </div>
+           <EmptyState>
+            <FontAwesomeIcon
+                icon={faCircleExclamation}
+                className="mb-4 text-3xl text-slate-300"
+            />
+            <p className="mb-6 text-slate-500">Product not found.</p>
+            <Link
+                to="/products"
+                className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+            >
+                Browse Products
+            </Link>
+           </EmptyState>
         );
     }
 

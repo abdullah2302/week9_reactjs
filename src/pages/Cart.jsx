@@ -2,25 +2,26 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from "../context/CartContext";
+import EmptyState from "../components/EmptyState";
 
 function Cart() {
     const { cartItems, removeFromCart, updateQty, cartTotal } = useCart();
 
     if (cartItems.length === 0) {
         return (
-            <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-24 text-center">
-                <FontAwesomeIcon
-                    icon={faCartShopping}
-                    className="mb-4 text-3xl text-slate-300"
-                />
-                <p className="mb-6 text-slate-500">Your cart is empty.</p>
-                <Link
-                    to="/products"
-                    className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
-                >
-                    Browse Products
-                </Link>
-            </div>
+           <EmptyState>
+            <FontAwesomeIcon
+                icon={faCartShopping}
+                className="mb-4 text-3xl text-slate-300"
+            />
+            <p className="mb-6 text-slate-500">Your cart is empty.</p>
+            <Link
+                to="/products"
+                className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+            >
+                Browse Products
+            </Link>
+           </EmptyState>
         );
     }
 
