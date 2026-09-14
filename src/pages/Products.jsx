@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import initialProducts from "../data/products.json";
 import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
@@ -30,13 +30,12 @@ function Products() {
         return matchesCategory && matchesSearch;
     });
 
-//     useEffect(() => {
-//     document.title = `Products (${filteredProducts.length}) · Shoply`;
+    useEffect(() => {
 
-//     return () => {
-//         document.title = "Shoply";
-//     };
-// }, [filteredProducts.length]);
+        return () => {
+            document.title = "Shoply";
+        };
+    }, [filteredProducts.length]);
 
     return (
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
@@ -53,6 +52,11 @@ function Products() {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
             />
+
+            <p className="mb-6 text-sm text-slate-500">
+                Showing {filteredProducts.length}{" "}
+                {filteredProducts.length === 1 ? "product" : "products"}
+            </p>
 
             <ProductList
                 products={filteredProducts}

@@ -10,9 +10,6 @@ function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
-
-
-
     const product = initialProducts.find((p) => p.id === Number(id));
 
     useEffect(() => {
