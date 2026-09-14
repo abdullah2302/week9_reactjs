@@ -3,10 +3,12 @@ import EmptyState from "../components/EmptyState";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 
+
 function NotFound() {
     return (
         <EmptyState>
             <p className="mb-6 text-slate-500">Page not found.</p>
+            
             <FontAwesomeIcon
                 icon={faCircleExclamation}
                 className="mb-4 text-3xl text-red-400"
