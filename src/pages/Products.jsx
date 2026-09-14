@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import initialProducts from "../data/products.json";
 import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
@@ -29,6 +29,14 @@ function Products() {
             .includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;
     });
+
+//     useEffect(() => {
+//     document.title = `Products (${filteredProducts.length}) · Shoply`;
+
+//     return () => {
+//         document.title = "Shoply";
+//     };
+// }, [filteredProducts.length]);
 
     return (
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">

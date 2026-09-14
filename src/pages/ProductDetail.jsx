@@ -3,13 +3,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCartPlus, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import initialProducts from "../data/products.json";
 import { useCart } from "../context/CartContext";
+import { useEffect } from "react";
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
 
+   
+
     const product = initialProducts.find((p) => p.id === Number(id));
+
+     useEffect(() => {
+    if (!product) return;
+
+    document.title = `${product.name} · Shoply`;
+
+    return () => {
+        document.title = "Shoply";
+    };
+}, [product]);
 
     if (!product) {
         return (
