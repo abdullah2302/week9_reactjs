@@ -15,7 +15,7 @@
     "price": 12,
     "description": "Double-walled ceramic mug that keeps your coffee hot for longer. Dishwasher safe.",
     "image": "/images/coffeeMug.jpg",
-    "inStock": true
+    "inStock": false
   },
   {
     "id": 3,
@@ -51,6 +51,6 @@
     "price": 22,
     "description": "Adjustable LED desk lamp with 3 brightness levels and a USB charging port.",
     "image": "/images/deskLamp.jpg",
-    "inStock": false
+    "inStock": true
   }
 ]
