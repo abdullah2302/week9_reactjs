@@ -62,7 +62,7 @@ function Navbar() {
                         <FontAwesomeIcon icon={faCartShopping} className="text-base" />
 
                         {cartCount > 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white">
+                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
                                 {cartCount}
                             </span>
                         )}
