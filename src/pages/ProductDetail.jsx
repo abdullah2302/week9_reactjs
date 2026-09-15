@@ -1,8 +1,9 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCartPlus, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCartPlus, faCircleExclamation, faHeart } from '@fortawesome/free-solid-svg-icons';
 import initialProducts from "../data/products.json";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { useEffect } from "react";
 import EmptyState from "../components/EmptyState";
 
@@ -10,9 +11,27 @@ function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart, updateQty, cartItems } = useCart();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
     const product = initialProducts.find((p) => p.id === Number(id));
-    const cartItem = cartItems.find((item) => item.id === product.id);
+
+    // Safe even when product is undefined (see the !product check below) —
+    // avoids crashing on product.id before we know product exists.
+    const cartItem = product
+        ? cartItems.find((item) => item.id === product.id)
+        : null;
     const quantity = cartItem?.qty || 0;
+
+    const inStock = product ? product.inStock !== false : true;
+    const inWishlist = product ? isInWishlist(product.id) : false;
+
+    function handleWishlistToggle() {
+        if (inWishlist) {
+            removeFromWishlist(product.id);
+        } else {
+            addToWishlist(product);
+        }
+    }
 
     useEffect(() => {
         if (!product)
@@ -54,16 +73,24 @@ function ProductDetail() {
             </button>
 
             <div className="grid gap-12 sm:grid-cols-2">
-                <div className="aspect-square overflow-hidden rounded-lg bg-slate-50">
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-50">
                     {product.image && (
                         <img
                             src={product.image}
                             alt={product.name}
-                            className="h-full w-full object-cover"
+                            className={`h-full w-full object-cover ${
+                                !inStock ? "opacity-50 grayscale" : ""
+                            }`}
                             onError={(e) => {
                                 e.currentTarget.style.display = "none";
                             }}
                         />
+                    )}
+
+                    {!inStock && (
+                        <span className="absolute left-3 top-3 rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                            Out of Stock
+                        </span>
                     )}
                 </div>
 
@@ -78,11 +105,29 @@ function ProductDetail() {
                         {product.description}
                     </p>
 
-                    <div className="mb-8 text-3xl font-semibold text-slate-900">
+                    <div className="mb-4 text-3xl font-semibold text-slate-900">
                         ${product.price}
                     </div>
 
-                    {quantity === 0 ? (
+                    {!inStock && (
+                        <p className="mb-4 text-sm font-medium text-red-500">
+                            Currently out of stock
+                        </p>
+                    )}
+
+                    {!inStock ? (
+                        <button
+                            onClick={handleWishlistToggle}
+                            className={`flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${
+                                inWishlist
+                                    ? "border-red-200 bg-red-50 text-red-500"
+                                    : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900"
+                            }`}
+                        >
+                            <FontAwesomeIcon icon={faHeart} />
+                            {inWishlist ? "Added to Wishlist" : "Add to Wishlist"}
+                        </button>
+                    ) : quantity === 0 ? (
                         <button
                             onClick={() => addToCart(product)}
                             className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
