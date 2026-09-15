@@ -32,6 +32,11 @@ export function CartProvider({ children }) {
         );
     }
 
+    // function to clear all cart items
+    function clearCart() {
+        setCartItems([]);
+    }
+
     const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
     const cartTotal = cartItems.reduce(
         (sum, item) => sum + item.qty * item.price,
@@ -45,6 +50,7 @@ export function CartProvider({ children }) {
                 addToCart,
                 removeFromCart,
                 updateQty,
+                clearCart,
                 cartCount,
                 cartTotal,
             }}

@@ -5,7 +5,7 @@ import { useCart } from "../context/CartContext";
 import EmptyState from "../components/EmptyState";
 
 function Cart() {
-    const { cartItems, removeFromCart, updateQty, cartTotal } = useCart();
+    const { cartItems, removeFromCart, updateQty, cartTotal, clearCart } = useCart();
 
     if (cartItems.length === 0) {
         return (
@@ -35,6 +35,15 @@ function Cart() {
                     ({itemCount})
                 </span>
             </h1>
+
+            <div className="mb-6 flex justify-end">
+                <button
+                    onClick={clearCart}
+                    className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                >
+                    Clear Cart
+                </button>
+            </div>
 
             <div className="grid gap-10 lg:grid-cols-3">
                 <div className="space-y-3 divide-slate-100  lg:col-span-2">

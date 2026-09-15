@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartShopping, faBars, faXmark,faBagShopping } from '@fortawesome/free-solid-svg-icons';
+import { faCartShopping, faHeart, faBars, faXmark, faBagShopping } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 function Navbar() {
     const { cartCount } = useCart();
+    const { wishlistCount } = useWishlist();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const linkClass = ({ isActive }) =>
@@ -54,6 +56,20 @@ function Navbar() {
                 </nav>
 
                 <div className="flex items-center gap-1">
+                    <Link
+                        to="/wishlist"
+                        onClick={closeMenu}
+                        className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100"
+                    >
+                        <FontAwesomeIcon icon={faHeart} className="text-base" />
+
+                        {wishlistCount > 0 && (
+                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
+                                {wishlistCount}
+                            </span>
+                        )}
+                    </Link>
+
                     <Link
                         to="/cart"
                         onClick={closeMenu}
