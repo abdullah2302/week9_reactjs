@@ -65,35 +65,48 @@ function Navbar() {
                 </nav>
 
                 <div className="flex items-center gap-2">
+
+                    {/* Wishlist - Desktop only */}
                     <Link
                         to="/account/wishlist"
-                        onClick={closeMenu}
-                        className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                        className="hidden items-center gap-1 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white sm:flex"
                     >
-                        <FontAwesomeIcon icon={faHeart} className="text-base" />
+                        <FontAwesomeIcon icon={faHeart} />
+                        <span>Wishlist</span>
 
                         {wishlistCount > 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
+                            <span className="ml-1 rounded-full bg-red-500 px-1.5 text-xs text-white">
                                 {wishlistCount}
                             </span>
                         )}
                     </Link>
 
-
-
+                    {/* Cart */}
                     <Link
                         to="/cart"
                         onClick={closeMenu}
                         className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
-                        <FontAwesomeIcon icon={faCartShopping} className="text-base" />
+                        <FontAwesomeIcon icon={faCartShopping} />
 
                         {cartCount > 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white ">
+                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
                                 {cartCount}
                             </span>
                         )}
                     </Link>
+
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        aria-label="Toggle theme"
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                        <FontAwesomeIcon
+                            icon={theme === "light" ? faMoon : faSun}
+                            className="text-base"
+                        />
+                    </button>
 
                     {isAuthenticated ? (
                         <div className="ml-1 hidden items-center gap-3 sm:flex">
@@ -121,10 +134,11 @@ function Navbar() {
                             >
                                 Login
                             </Link>
-                          
+
                         </div>
                     )}
 
+                    {/* Hamburger - Mobile */}
                     <button
                         onClick={() => setIsMenuOpen((prev) => !prev)}
                         aria-label="Toggle menu"
@@ -137,14 +151,6 @@ function Navbar() {
                         />
                     </button>
 
-
-
-                    <button
-                        onClick={toggleTheme}
-                        className="absolute right-4 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 sm:flex"
-                    >
-                        <FontAwesomeIcon icon={theme === "light" ? faMoon : faSun} />
-                    </button>
                 </div>
             </div>
 
@@ -161,6 +167,20 @@ function Navbar() {
                     <NavLink to="/products" className={mobileLinkClass} onClick={closeMenu}>
                         Products
                     </NavLink>
+                    <Link
+                        to="/account/wishlist"
+                        onClick={closeMenu}
+                        className={mobileLinkClass}
+                    >
+                        <FontAwesomeIcon icon={faHeart} className="mr-2" />
+                        Wishlist
+
+                        {wishlistCount > 0 && (
+                            <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+                                {wishlistCount}
+                            </span>
+                        )}
+                    </Link>
                     <NavLink to="/about" className={mobileLinkClass} onClick={closeMenu}>
                         About
                     </NavLink>
