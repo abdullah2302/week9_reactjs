@@ -27,11 +27,11 @@ function Login() {
 
     return (
         <main className="mx-auto flex max-w-sm flex-col px-4 py-24">
-            <h1 className="mb-2 text-2xl font-semibold text-slate-900">
+            <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-400">
                 Sign in
             </h1>
-            <p className="mb-8 text-sm text-slate-500">
-                This is a demo login — just enter any name to continue.
+            <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
+                This is a demo login just enter any name to continue.
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -41,20 +41,20 @@ function Login() {
                     placeholder="Your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-800 dark:text-slate-400 dark:placeholder-slate-500 dark:focus:border-slate-400"
                 />
                 <button
                     type="submit"
                     onClick={inputHandler}
-                    className="rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                    className="rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-400 dark:text-slate-900 dark:hover:bg-slate-300"
                 >
                     Sign in
                 </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-slate-500">
+            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 Don't have an account?{" "}
-                <Link to="/signup" className="font-medium text-slate-900 underline">
+                <Link to="/signup" className="font-medium text-slate-900 underline transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
                     Sign up
                 </Link>
             </p>

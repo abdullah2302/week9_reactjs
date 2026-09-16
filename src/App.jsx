@@ -16,7 +16,7 @@ import NotFound from "./pages/NotFound";
 
 function App() {
     return (
-        <div className="flex min-h-screen flex-col bg-white">
+        <div className="flex min-h-screen flex-col bg-white dark:bg-slate-900">
             <Navbar />
 
             <div className="flex-1">
@@ -28,8 +28,6 @@ function App() {
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />
-
-
                     <Route
                         path="/account"
                         element={

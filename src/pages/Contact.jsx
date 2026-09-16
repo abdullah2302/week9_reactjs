@@ -18,18 +18,18 @@ function Contact() {
 
     return (
         <main className="mx-auto max-w-5xl px-4 py-16">
-            <h1 className="mb-10 text-2xl font-semibold text-slate-900">
+            <h1 className="mb-10 text-2xl font-semibold text-slate-900 dark:text-white">
                 Contact Us
             </h1>
 
             <div className="grid gap-14 md:grid-cols-2">
                 <div>
-                    <p className="mb-8 leading-relaxed text-slate-500">
+                    <p className="mb-8 leading-relaxed text-slate-500 dark:text-slate-400">
                         Have a question or just want to say hi? Drop by our
                         store or reach out using the details below.
                     </p>
 
-                    <ul className="space-y-5 text-sm text-slate-600">
+                    <ul className="space-y-5 text-sm text-slate-600 dark:text-slate-300">
                         <li className="flex items-start gap-3">
                             <FontAwesomeIcon
                                 icon={faLocationDot}
@@ -81,7 +81,7 @@ function Contact() {
 
                 <div>
                     {sent && (
-                        <p className="mb-4 text-sm text-slate-900">
+                        <p className="mb-4 text-sm text-slate-900 dark:text-white">
                             Thanks! Your message has been sent (demo only).
                         </p>
                     )}
@@ -93,7 +93,7 @@ function Contact() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                            className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:text-white "
                         />
                         <input
                             type="email"
@@ -101,7 +101,7 @@ function Contact() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                            className="border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:text-white"
                         />
                         <textarea
                             placeholder="Your message"
@@ -109,11 +109,11 @@ function Contact() {
                             onChange={(e) => setMessage(e.target.value)}
                             required
                             rows={4}
-                            className="resize-none border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                            className="resize-none border-b border-slate-200 bg-transparent py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:text-white"
                         />
                         <button
                             type="submit"
-                            className="mt-2 rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                            className="mt-2 rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                         >
                             Send Message
                         </button>

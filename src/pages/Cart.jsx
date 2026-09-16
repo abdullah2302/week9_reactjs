@@ -20,7 +20,7 @@ function Cart() {
             <p className="mb-6 text-slate-500">Your cart is empty.</p>
             <Link
                 to="/products"
-                className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+                className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-600"
             >
                 Browse Products
             </Link>
@@ -32,9 +32,9 @@ function Cart() {
 
     return (
         <main className="mx-auto max-w-5xl px-4 py-14 ">
-            <h1 className="mb-8 text-2xl font-semibold text-slate-900">
+            <h1 className="mb-8 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                 Your Cart
-                <span className="ml-2 text-base font-normal text-slate-400">
+                <span className="ml-2 text-base font-normal text-slate-400 dark:text-slate-200">
                     ({itemCount})
                 </span>
             </h1>
@@ -48,7 +48,7 @@ function Cart() {
                         }
                         clearCart()
                     }}
-                    className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                    className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
                 >
                     Clear Cart
                 </button>
@@ -59,9 +59,9 @@ function Cart() {
                     {cartItems.map((item) => (
                         <div
                             key={item.id}
-                            className="flex items-center bg-slate-100 rounded-full gap-4 p-5 h-20"
+                            className="flex items-center bg-slate-100 rounded-full gap-4 p-5 h-20 dark:bg-slate-800"
                         >
-                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-700">
                                 {item.image && (
                                     <img
                                         src={item.image}
@@ -75,10 +75,10 @@ function Cart() {
                             </div>
 
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium text-slate-900">
+                                <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                                     {item.name}
                                 </p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
                                     {item.category}
                                 </p>
                             </div>
@@ -86,28 +86,28 @@ function Cart() {
                             <div className="flex items-center gap-3 text-sm">
                                 <button
                                     onClick={() => updateQty(item.id, item.qty - 1)}
-                                    className="flex h-6 w-6 items-center justify-center text-slate-500 transition hover:text-slate-900"
+                                    className="flex h-6 w-6 items-center justify-center text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                                 >
                                     −
                                 </button>
-                                <span className="w-4 text-center text-slate-900">
+                                <span className="w-4 text-center text-slate-900 dark:text-slate-100">
                                     {item.qty}
                                 </span>
                                 <button
                                     onClick={() => updateQty(item.id, item.qty + 1)}
-                                    className="flex h-6 w-6 items-center justify-center text-slate-500 transition hover:text-slate-900"
+                                    className="flex h-6 w-6 items-center justify-center text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                                 >
                                     +
                                 </button>
                             </div>
 
-                            <span className="w-16 shrink-0 text-right text-sm font-semibold text-slate-900">
+                            <span className="w-16 shrink-0 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
                                 ${(item.price * item.qty).toFixed(2)}
                             </span>
 
                             <button
                                 onClick={() => removeFromCart(item.id)}
-                                className="text-slate-500 transition hover:text-red-500"
+                                className="text-slate-500 transition hover:text-red-500 dark:text-slate-400 dark:hover:text-red-500"
                                 title="Remove item"
                             >
                                 <FontAwesomeIcon icon={faTrash} className="text-sm" />
@@ -117,27 +117,27 @@ function Cart() {
                 </div>
 
                 <div className="lg:sticky lg:top-24 lg:self-start">
-                    <div className="border-t border-slate-100 pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
-                        <div className="mb-4 flex justify-between text-sm text-slate-500">
+                    <div className="border-t border-slate-100 pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0 dark:border-slate-700">
+                        <div className="mb-4 flex justify-between text-sm text-slate-500  dark:text-slate-400 ">
                             <span>Subtotal</span>
                             <span>${cartTotal.toFixed(2)}</span>
                         </div>
-                        <div className="mb-4 flex justify-between text-sm text-slate-500">
+                        <div className="mb-4 flex justify-between text-sm text-slate-500 dark:text-slate-400">
                             <span>Shipping</span>
                             <span>Free</span>
                         </div>
-                        <div className="mb-6 flex justify-between border-t border-slate-100 pt-4 text-base font-semibold text-slate-900">
+                        <div className="mb-6 flex justify-between border-t border-slate-100 pt-4 text-base font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
                             <span>Total</span>
                             <span>${cartTotal.toFixed(2)}</span>
                         </div>
 
-                        <button className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700">
+                        <button className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark: bg-slate-800 dark:hover:bg-slate-600">
                             Proceed to Checkout
                         </button>
 
                         <Link
                             to="/products"
-                            className="mt-4 block text-center text-xs text-slate-400 transition hover:text-slate-900"
+                            className="mt-4 block text-center text-xs text-slate-400 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                         >
                             Continue Shopping
                         </Link>

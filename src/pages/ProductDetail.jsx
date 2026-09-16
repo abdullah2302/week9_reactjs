@@ -76,17 +76,17 @@ function ProductDetail() {
     }
 
     return (
-        <main className="mx-auto max-w-5xl px-4 py-14 bg-slate-50 rounded-lg">
+        <main className="mx-auto max-w-5xl px-4 py-14 bg-slate-50 rounded-lg dark:bg-slate-900">
             <button
                 onClick={() => navigate(-1)}
-                className="mb-8 flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900"
+                className="mb-8 flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900 dark:text-slate-200"
             >
                 <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
                 Back
             </button>
 
             <div className="grid gap-12 sm:grid-cols-2">
-                <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-50">
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-800">
                     {product.image && (
                         <img
                             src={product.image}
@@ -107,22 +107,22 @@ function ProductDetail() {
                 </div>
 
                 <div className="flex flex-col">
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         {product.category}
                     </p>
-                    <h1 className="mb-4 text-2xl font-semibold text-slate-900">
+                    <h1 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                         {product.name}
                     </h1>
-                    <p className="mb-6 leading-relaxed text-slate-500">
+                    <p className="mb-6 leading-relaxed text-slate-500 dark:text-slate-400">
                         {product.description}
                     </p>
 
-                    <div className="mb-4 text-3xl font-semibold text-slate-900">
+                    <div className="mb-4 text-3xl font-semibold text-slate-900 dark:text-slate-100">
                         ${product.price}
                     </div>
 
                     {!inStock && (
-                        <p className="mb-4 text-sm font-medium text-red-500">
+                        <p className="mb-4 text-sm font-medium text-red-500 dark:text-red-400">
                             Currently out of stock
                         </p>
                     )}
@@ -131,8 +131,8 @@ function ProductDetail() {
                         <button
                             onClick={handleWishlistToggle}
                             className={`flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${inWishlist
-                                    ? "border-red-200 bg-red-50 text-red-500"
-                                    : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900"
+                                    ? "border-red-200 bg-red-50 text-red-500 dark:bg-slate-800 dark:text-red-400"
+                                    : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-400 dark:hover:text-slate-100"
                                 }`}
                         >
                             <FontAwesomeIcon icon={faHeart} />
@@ -141,7 +141,7 @@ function ProductDetail() {
                     ) : quantity === 0 ? (
                         <button
                             onClick={handleAddToCart}
-                            className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                            className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
                         >
                             <FontAwesomeIcon icon={faCartPlus} />
                             Add to Cart
@@ -150,24 +150,24 @@ function ProductDetail() {
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => updateQty(product.id, quantity - 1)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                             >
                                 −
                             </button>
 
-                            <span className="w-5 text-center font-medium">
+                            <span className="w-5 text-center font-medium dark:text-slate-200">
                                 {quantity}
                             </span>
 
                             <button
                                 onClick={() => updateQty(product.id, quantity + 1)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                             >
                                 +
                             </button>
                         </div>
                     )}
-                    <div className="mt-8 space-y-2 border-t border-slate-100 pt-6 text-sm text-slate-500">
+                    <div className="mt-8 space-y-2 border-t border-slate-100 pt-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
                         <p>Free delivery on orders over $50</p>
                         <p>1-year warranty included</p>
                     </div>

@@ -39,7 +39,7 @@ function Products() {
 
     return (
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
-            <h1 className="mb-8 text-2xl font-semibold text-slate-900">
+            <h1 className="mb-8 text-2xl font-semibold text-slate-900 dark:text-white">
                 All Products
             </h1>
 
