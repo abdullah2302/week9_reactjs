@@ -3,9 +3,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from "../context/CartContext";
 import EmptyState from "../components/EmptyState";
+import {useAuth} from "../context/AuthContext";
 
 function Cart() {
     const { cartItems, removeFromCart, updateQty, cartTotal, clearCart } = useCart();
+    const { isAuthenticated } = useAuth();
+    
 
     if (cartItems.length === 0) {
         return (
@@ -38,7 +41,13 @@ function Cart() {
 
             <div className="mb-6 flex justify-end">
                 <button
-                    onClick={clearCart}
+                    onClick={()=>{
+                        if (!isAuthenticated) {
+                            alert("User is not authenticated. Redirecting to login page.");
+                            return;
+                        }
+                        clearCart()
+                    }}
                     className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
                 >
                     Clear Cart

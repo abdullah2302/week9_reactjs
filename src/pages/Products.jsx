@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback,useMemo } from "react";
 import initialProducts from "../data/products.json";
 import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
@@ -10,25 +10,25 @@ function Products() {
     const [products, setProducts] = useState(initialProducts);
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [searchTerm, setSearchTerm] = useState("");
-
-    function handleAddProduct(newProduct) {
-        setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
-    }
-
-    function handleDeleteProduct(id) {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-    }
-
     const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-    const filteredProducts = products.filter((p) => {
-        const matchesCategory =
-            categoryFilter === "All" || p.category === categoryFilter;
-        const matchesSearch = p.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    const handleAddProduct = useCallback((newProduct) => {
+        setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
+    }, []);
+
+    const handleDeleteProduct = useCallback((id) => {
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+    }, []);
+
+    const filteredProducts = useMemo(() => {
+        return products.filter((product) => {
+            const matchesCategory =
+                categoryFilter === "All" || product.category === categoryFilter;
+            const matchesSearch =
+                product.name.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+    }, [products, categoryFilter, searchTerm]);
 
     useEffect(() => {
 

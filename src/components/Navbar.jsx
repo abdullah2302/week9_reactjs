@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartShopping, faHeart, faBars, faXmark, faBagShopping } from '@fortawesome/free-solid-svg-icons';
+import { faCartShopping, faHeart, faBars, faXmark, faBagShopping, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
     const { cartCount } = useCart();
     const { wishlistCount } = useWishlist();
+    const { isAuthenticated, user, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const linkClass = ({ isActive }) =>
@@ -24,6 +26,11 @@ function Navbar() {
 
     function closeMenu() {
         setIsMenuOpen(false);
+    }
+
+    function handleLogout() {
+        logout();
+        closeMenu();
     }
 
     return (
@@ -55,9 +62,9 @@ function Navbar() {
                     </NavLink>
                 </nav>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                     <Link
-                        to="/wishlist"
+                        to="/account/wishlist"
                         onClick={closeMenu}
                         className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100"
                     >
@@ -83,6 +90,37 @@ function Navbar() {
                             </span>
                         )}
                     </Link>
+
+                    {/* Auth area: greeting + logout when signed in,
+                        Login/Sign Up links otherwise */}
+                    {isAuthenticated ? (
+                        <div className="ml-1 hidden items-center gap-3 sm:flex">
+                            <Link
+                                to="/account"
+                                onClick={closeMenu}
+                                className="flex items-center gap-1.5 text-sm text-slate-700 transition hover:text-slate-900"
+                            >
+                                <FontAwesomeIcon icon={faUser} className="text-xs" />
+                                {user?.name}
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="text-sm text-slate-500 transition hover:text-slate-900"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="ml-1 hidden items-center gap-3 sm:flex">
+                            <Link
+                                to="/login"
+                                onClick={closeMenu}
+                                className="text-sm text-slate-500 transition hover:text-slate-900"
+                            >
+                                Login
+                            </Link>
+                        </div>
+                    )}
 
                     <button
                         onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -118,6 +156,31 @@ function Navbar() {
                     <NavLink to="/contact" className={mobileLinkClass} onClick={closeMenu}>
                         Contact
                     </NavLink>
+
+                    <div className="mt-2 border-t border-slate-100 pt-2">
+                        {isAuthenticated ? (
+                            <>
+                                <NavLink to="/account" className={mobileLinkClass} onClick={closeMenu}>
+                                    {user?.name}'s Account
+                                </NavLink>
+                                <button
+                                    onClick={handleLogout}
+                                    className="block w-full py-2.5 text-left text-base text-slate-500"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <NavLink to="/login" className={mobileLinkClass} onClick={closeMenu}>
+                                    Login
+                                </NavLink>
+                                <NavLink to="/signup" className={mobileLinkClass} onClick={closeMenu}>
+                                    Sign Up
+                                </NavLink>
+                            </>
+                        )}
+                    </div>
                 </div>
             </nav>
         </header>

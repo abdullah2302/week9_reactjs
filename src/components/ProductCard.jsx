@@ -1,20 +1,36 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartPlus, faTrash, faHeart } from '@fortawesome/free-solid-svg-icons';
 import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 
 function ProductCard({ product, onAddToCart, onDelete }) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const inStock = product.inStock !== false;
     const inWishlist = isInWishlist(product.id);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
+
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+
         onAddToCart(product);
     };
 
     const handleWishlistToggle = (e) => {
         e.preventDefault();
+
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+
         if (inWishlist) {
             removeFromWishlist(product.id);
         } else {

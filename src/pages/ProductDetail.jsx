@@ -1,22 +1,23 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCartPlus, faCircleExclamation, faHeart } from '@fortawesome/free-solid-svg-icons';
 import initialProducts from "../data/products.json";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import EmptyState from "../components/EmptyState";
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { addToCart, updateQty, cartItems } = useCart();
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { isAuthenticated } = useAuth();
 
     const product = initialProducts.find((p) => p.id === Number(id));
 
-    // Safe even when product is undefined (see the !product check below) —
-    // avoids crashing on product.id before we know product exists.
     const cartItem = product
         ? cartItems.find((item) => item.id === product.id)
         : null;
@@ -24,13 +25,25 @@ function ProductDetail() {
 
     const inStock = product ? product.inStock !== false : true;
     const inWishlist = product ? isInWishlist(product.id) : false;
-
     function handleWishlistToggle() {
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+
         if (inWishlist) {
             removeFromWishlist(product.id);
         } else {
             addToWishlist(product);
         }
+    }
+
+    function handleAddToCart() {
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+        addToCart(product);
     }
 
     useEffect(() => {
@@ -78,9 +91,8 @@ function ProductDetail() {
                         <img
                             src={product.image}
                             alt={product.name}
-                            className={`h-full w-full object-cover ${
-                                !inStock ? "opacity-50 grayscale" : ""
-                            }`}
+                            className={`h-full w-full object-cover ${!inStock ? "opacity-50 grayscale" : ""
+                                }`}
                             onError={(e) => {
                                 e.currentTarget.style.display = "none";
                             }}
@@ -118,18 +130,17 @@ function ProductDetail() {
                     {!inStock ? (
                         <button
                             onClick={handleWishlistToggle}
-                            className={`flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${
-                                inWishlist
+                            className={`flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${inWishlist
                                     ? "border-red-200 bg-red-50 text-red-500"
                                     : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900"
-                            }`}
+                                }`}
                         >
                             <FontAwesomeIcon icon={faHeart} />
                             {inWishlist ? "Added to Wishlist" : "Add to Wishlist"}
                         </button>
                     ) : quantity === 0 ? (
                         <button
-                            onClick={() => addToCart(product)}
+                            onClick={handleAddToCart}
                             className="flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
                         >
                             <FontAwesomeIcon icon={faCartPlus} />
