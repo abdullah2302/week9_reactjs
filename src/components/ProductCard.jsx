@@ -18,6 +18,8 @@ function ProductCard({ product, onAddToCart, onDelete }) {
 
     const inStock = product.inStock !== false;
     const inWishlist = isInWishlist(product.id);
+    const linkTo = `/products/${product.id}`;
+    console.log(linkTo);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -49,7 +51,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
         <div className="group overflow-hidden rounded-xl border border-slate-300 bg-slate-50  hover:translate-y-1 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
 
             {/* Product Image */}
-            <Link to={`/products/${product.id}`} className="block">
+            <Link to={linkTo} className="block">
                 <div className="relative aspect-square overflow-hidden bg-white dark:bg-slate-900">
 
                     {product.image ? (
