@@ -59,14 +59,14 @@ function ProductForm({ onAddProduct }) {
                 placeholder="Product name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400"
+                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
             />
             <input
                 type="text"
                 placeholder="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400"
+                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
             />
 
             <input
@@ -74,7 +74,7 @@ function ProductForm({ onAddProduct }) {
                 placeholder="Category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400"
+                className="min-w-[140px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
             />
 
             <input
@@ -82,12 +82,12 @@ function ProductForm({ onAddProduct }) {
                 placeholder="Price"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="min-w-[100px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400"
+                className="min-w-[100px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
             />
              <button
                 type="button"
                 onClick={() => document.getElementById("imageInput").click()}
-                className="flex items-center gap-2 rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:focus:border-slate-400"
+                className="flex items-center gap-2 rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500"
             >
                 <i className="fa-solid fa-image"></i>
                 {image ? "Change Image" : "Upload Image"}
@@ -102,7 +102,7 @@ function ProductForm({ onAddProduct }) {
 
             <button
                 type="submit"
-                className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
+                className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500"
             >
                 <FontAwesomeIcon icon={faPlus} className="text-xs" />
                 Add Product
