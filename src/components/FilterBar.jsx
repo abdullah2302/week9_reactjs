@@ -19,7 +19,7 @@ function FilterBar({
                 <select
                     value={categoryFilter}
                     onChange={(e) => onCategoryChange(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:bg-slate-500 dark:border-none dark:text-white "
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:bg-slate-500 dark:border-none dark:text-white dar"
                 >
                     {categories.map((cat) => (
                         <option key={cat} value={cat}>

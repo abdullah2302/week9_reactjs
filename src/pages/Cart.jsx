@@ -131,7 +131,7 @@ function Cart() {
                             <span>${cartTotal.toFixed(2)}</span>
                         </div>
 
-                        <button className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark: bg-slate-800 dark:hover:bg-slate-600">
+                        <button className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-slate-300 dark:text-slate-800">
                             Proceed to Checkout
                         </button>
 

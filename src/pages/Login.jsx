@@ -27,7 +27,7 @@ function Login() {
 
     return (
         <main className="mx-auto flex max-w-sm flex-col px-4 py-24">
-            <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-400">
+            <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-200">
                 Sign in
             </h1>
             <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
@@ -46,7 +46,7 @@ function Login() {
                 <button
                     type="submit"
                     onClick={inputHandler}
-                    className="rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-400 dark:text-slate-900 dark:hover:bg-slate-300"
+                    className="rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                 >
                     Sign in
                 </button>
