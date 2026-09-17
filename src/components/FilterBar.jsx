@@ -19,10 +19,10 @@ function FilterBar({
                 <select
                     value={categoryFilter}
                     onChange={(e) => onCategoryChange(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:bg-slate-500 dark:border-none dark:text-white dar"
+                    className="rounded-lg border border-slate-200 bg-white pr-10 px-4 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:bg-slate-800 dark:border-none dark:text-slate-300"
                 >
                     {categories.map((cat) => (
-                        <option key={cat} value={cat}>
+                        <option  key={cat} value={cat}>
                             {cat}
                         </option>
                     ))}
@@ -32,14 +32,14 @@ function FilterBar({
             <div className="relative sm:w-56">
                 <FontAwesomeIcon
                     icon={faMagnifyingGlass}
-                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:"
+                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500"
                 />
                 <input
                     type="text"
                     placeholder="Search"
                     value={searchTerm}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="w-full border-b border-slate-200 bg-transparent py-1.5 pl-5 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700"
+                    className="w-full border-b border-slate-200 bg-transparent py-1.5 pl-5 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500"
                 />
             </div>
         </div>
