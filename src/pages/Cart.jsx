@@ -55,11 +55,11 @@ function Cart() {
             </div>
 
             <div className="grid gap-10 lg:grid-cols-3">
-                <div className="space-y-3 divide-slate-100  lg:col-span-2">
+                <div className="space-y-3 divide-slate-100 lg:col-span-2">
                     {cartItems.map((item) => (
                         <div
                             key={item.id}
-                            className="flex items-center bg-slate-100 rounded-full gap-4 p-5 h-20 dark:bg-slate-800"
+                            className="flex flex-wrap items-center gap-4 rounded-2xl bg-slate-100 p-4 dark:bg-slate-800 sm:flex-nowrap sm:rounded-full sm:p-5"
                         >
                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-700">
                                 {item.image && (
@@ -74,7 +74,7 @@ function Cart() {
                                 )}
                             </div>
 
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 basis-full sm:basis-auto">
                                 <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                                     {item.name}
                                 </p>
@@ -101,13 +101,13 @@ function Cart() {
                                 </button>
                             </div>
 
-                            <span className="w-16 shrink-0 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            <span className="ml-auto shrink-0 text-right text-sm font-semibold text-slate-900 dark:text-slate-100 sm:ml-0 sm:w-16">
                                 ${(item.price * item.qty).toFixed(2)}
                             </span>
 
                             <button
                                 onClick={() => removeFromCart(item.id)}
-                                className="text-slate-500 transition hover:text-red-500 dark:text-slate-400 dark:hover:text-red-500"
+                                className="shrink-0 text-slate-500 transition hover:text-red-500 dark:text-slate-400 dark:hover:text-red-500"
                                 title="Remove item"
                             >
                                 <FontAwesomeIcon icon={faTrash} className="text-sm" />

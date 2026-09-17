@@ -87,20 +87,20 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                     {product.category}
                 </p>
 
-                <div className="mt-3 flex items-center justify-between gap-2">
+                <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2">
 
                     {/* Price */}
                     <span className="text-sm font-semibold text-slate-900 dark:text-white">
                         ${product.price}
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center flex-wrap items-center justify-center gap-2">
 
                         {/* Add to Cart / Wishlist */}
                         {inStock ? (
                             <button
                                 onClick={handleAddToCart}
-                                className="flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                                className="flex items-center shrink-0 gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                             >
                                 <FontAwesomeIcon
                                     icon={faCartPlus}
@@ -111,7 +111,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                         ) : (
                             <button
                                 onClick={handleWishlistToggle}
-                                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                className={`flex items-center shrink-0 gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                     inWishlist
                                         ? "border-red-200 bg-red-50 text-red-500 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
                                         : "border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
@@ -131,7 +131,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                             <button
                                 onClick={() => onDelete(product.id)}
                                 aria-label="Remove product"
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-slate-600 dark:text-slate-400 dark:hover:border-red-900 dark:hover:bg-red-950 dark:hover:text-red-400"
+                                className="flex h-8 w-8 items-center shrink-0 justify-center rounded-full border border-slate-200 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-slate-600 dark:text-slate-400 dark:hover:border-red-900 dark:hover:bg-red-950 dark:hover:text-red-400 overflow-hidden"
                             >
                                 <FontAwesomeIcon
                                     icon={faTrash}
