@@ -72,7 +72,7 @@ function Footer() {
                         <input
                             type="email"
                             placeholder="Your email"
-                            className="w-full border-b border-slate-200 bg-transparent py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-400"
+                            className="w-full border-b border-slate-200 bg-transparent py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-400 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
                         />
                         <button className="shrink-0 text-sm font-medium text-slate-900 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
                             Sign up
