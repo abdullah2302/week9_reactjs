@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback,useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import initialProducts from "../data/products.json";
 import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
@@ -7,10 +8,39 @@ import { useCart } from "../context/CartContext";
 
 function Products() {
     const { addToCart } = useCart();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [products, setProducts] = useState(initialProducts);
-    const [categoryFilter, setCategoryFilter] = useState("All");
-    const [searchTerm, setSearchTerm] = useState("");
+    const categoryFilter = searchParams.get("category") || "All";
+    const searchTerm = searchParams.get("search") || "";
     const categories = ["All", ...new Set(products.map((p) => p.category))];
+
+    const handleCategoryChange = (category) => {
+        setSearchParams((prev) => {
+            const params = new URLSearchParams(prev);
+
+            if (category === "All") {
+                params.delete("category");
+            } else {
+                params.set("category", category);
+            }
+
+            return params;
+        });
+    };
+
+    const handleSearchChange = (value) => {
+        setSearchParams((prev) => {
+            const params = new URLSearchParams(prev);
+
+            if (value.trim() === "") {
+                params.delete("search");
+            } else {
+                params.set("search", value);
+            }
+
+            return params;
+        });
+    };
 
     const handleAddProduct = useCallback((newProduct) => {
         setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
@@ -48,9 +78,9 @@ function Products() {
             <FilterBar
                 categories={categories}
                 categoryFilter={categoryFilter}
-                onCategoryChange={setCategoryFilter}
+                onCategoryChange={handleCategoryChange}
                 searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
+                onSearchChange={handleSearchChange}
             />
 
             <p className="mb-6 text-sm text-slate-500">
