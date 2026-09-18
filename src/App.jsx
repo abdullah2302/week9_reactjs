@@ -13,9 +13,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AccountLayout from "./pages/account/AccountLayout";
 import NotFound from "./pages/NotFound";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     return (
+        <>
         <div className="flex min-h-screen flex-col bg-white dark:bg-slate-900">
             <Navbar />
 
@@ -47,6 +50,8 @@ function App() {
 
             <Footer />
         </div>
+        <ToastContainer />
+        </>
     );
 }
 

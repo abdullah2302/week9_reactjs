@@ -8,6 +8,7 @@ import {
 
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 function ProductCard({ product, onAddToCart, onDelete }) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -22,15 +23,16 @@ function ProductCard({ product, onAddToCart, onDelete }) {
     console.log(linkTo);
 
     const handleAddToCart = (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        if (!isAuthenticated) {
-            navigate("/login", { state: { from: location } });
-            return;
-        }
+    if (!isAuthenticated) {
+        navigate("/login", { state: { from: location } });
+        return;
+    }
 
-        onAddToCart(product);
-    };
+    onAddToCart(product);
+    toast.success(`${product.name} added to cart`);
+};
 
     const handleWishlistToggle = (e) => {
         e.preventDefault();

@@ -10,6 +10,7 @@ import EmptyState from "../components/EmptyState";
 
 function ProductDetail() {
     const { id } = useParams();
+    const {name} = useParams();
     const navigate = useNavigate();
     const location = useLocation();
     const { addToCart, updateQty, cartItems } = useCart();
