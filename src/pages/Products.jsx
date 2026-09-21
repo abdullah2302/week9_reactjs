@@ -1,71 +1,99 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import initialProducts from "../data/products.json";
+import { productsApi } from "../api/productsApi";
 import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
 import ProductList from "../components/ProductList";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import Pagination from "../components/Pagination";
+
+// Mongo documents use _id — flatten to id so every existing component
+// (ProductCard, ProductDetail, Cart, Wishlist) keeps working unchanged.
+function normalize(product) {
+    return { ...product, id: product._id };
+}
 
 function Products() {
+    const { user } = useAuth();
     const { addToCart } = useCart();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [products, setProducts] = useState(initialProducts);
-    const categoryFilter = searchParams.get("category") || "All";
-    const searchTerm = searchParams.get("search") || "";
-    const categories = ["All", ...new Set(products.map((p) => p.category))];
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState(["All"]);
+    const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("All");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    const handleCategoryChange = (category) => {
-        setSearchParams((prev) => {
-            const params = new URLSearchParams(prev);
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setDebouncedSearch(searchTerm.trim());
+        }, 350);
 
-            if (category === "All") {
-                params.delete("category");
-            } else {
-                params.set("category", category);
-            }
+        return () => window.clearTimeout(timeoutId);
+    }, [searchTerm]);
 
-            return params;
-        });
-    };
+    const requestParams = useMemo(
+        () => ({
+            page: pagination.page,
+            limit: 12,
+            search: debouncedSearch,
+            category: categoryFilter,
+        }),
+        [pagination.page, debouncedSearch, categoryFilter]
+    );
 
-    const handleSearchChange = (value) => {
-        setSearchParams((prev) => {
-            const params = new URLSearchParams(prev);
+    useEffect(() => {
+        const controller = new AbortController();
+        setLoading(true);
+        setError("");
 
-            if (value.trim() === "") {
-                params.delete("search");
-            } else {
-                params.set("search", value);
-            }
+        productsApi
+            .getAll(requestParams, { signal: controller.signal })
+            .then((data) => {
+                setProducts(data.products.map(normalize));
+                setCategories(["All", ...data.categories]);
+                setPagination(data.pagination);
+            })
+            .catch((err) => {
+                if (err.name !== "CanceledError" && err.name !== "AbortError") {
+                    setError(err.message);
+                }
+            })
+            .finally(() => setLoading(false));
 
-            return params;
-        });
-    };
+        return () => controller.abort();
+    }, [requestParams]);
 
-    const handleAddProduct = useCallback((newProduct) => {
-        setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
+    const handleAddProduct = useCallback(async (newProduct) => {
+        const created = await productsApi.create(newProduct);
+        setProducts((prev) => [...prev, normalize(created)]);
     }, []);
 
-    const handleDeleteProduct = useCallback((id) => {
+    const handleDeleteProduct = useCallback(async (id) => {
+        await productsApi.remove(id);
         setProducts((prev) => prev.filter((p) => p.id !== id));
     }, []);
 
-    const filteredProducts = useMemo(() => {
-        return products.filter((product) => {
-            const matchesCategory =
-                categoryFilter === "All" || product.category === categoryFilter;
-            const matchesSearch =
-                product.name.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesCategory && matchesSearch;
-        });
-    }, [products, categoryFilter, searchTerm]);
+    const handleCategoryChange = useCallback((category) => {
+        setCategoryFilter(category);
+        setPagination((current) => ({ ...current, page: 1 }));
+    }, []);
+
+    const handleSearchChange = useCallback((search) => {
+        setSearchTerm(search);
+        setPagination((current) => ({ ...current, page: 1 }));
+    }, []);
 
     useEffect(() => {
+        document.title = `Products (${pagination.total}) · Shoply`;
 
         return () => {
             document.title = "Shoply";
         };
-    }, [filteredProducts.length]);
+    }, [pagination.total]);
+
+
 
     return (
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
@@ -73,7 +101,10 @@ function Products() {
                 All Products
             </h1>
 
-            <ProductForm onAddProduct={handleAddProduct} />
+
+            {user && user.role === "admin" && (
+                <ProductForm onAddProduct={handleAddProduct} />
+            )}
 
             <FilterBar
                 categories={categories}
@@ -83,16 +114,34 @@ function Products() {
                 onSearchChange={handleSearchChange}
             />
 
-            <p className="mb-6 text-sm text-slate-500">
-                Showing {filteredProducts.length}{" "}
-                {filteredProducts.length === 1 ? "product" : "products"}
-            </p>
+            {loading ? (
+                <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                    Loading products...
+                </p>
+            ) : error ? (
+                <p className="py-10 text-center text-sm text-red-500">{error}</p>
+            ) : (
+                <>
+                    <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+                        Showing {products.length} of {pagination.total} products
+                    </p>
 
-            <ProductList
-                products={filteredProducts}
-                onAddToCart={addToCart}
-                onDelete={handleDeleteProduct}
-            />
+                    <ProductList
+                        products={products}
+                        onAddToCart={addToCart}
+                        onDelete={
+                            user?.role === "admin"
+                                ? handleDeleteProduct
+                                : undefined
+                        }
+                    />
+                    <Pagination
+                        page={pagination.page}
+                        totalPages={pagination.totalPages}
+                        onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
+                    />
+                </>
+            )}
         </main>
     );
 }

@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { WishlistProvider } from "./context/WishlistContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import "./index.css";
 
@@ -13,11 +14,13 @@ createRoot(document.getElementById("root")).render(
         <BrowserRouter>
             <ThemeProvider>
                 <AuthProvider>
-                    <CartProvider>
-                        <WishlistProvider>
-                            <App />
-                        </WishlistProvider>
-                    </CartProvider>
+                    <NotificationProvider>
+                        <CartProvider>
+                            <WishlistProvider>
+                                <App />
+                            </WishlistProvider>
+                        </CartProvider>
+                    </NotificationProvider>
                 </AuthProvider>
             </ThemeProvider>
         </BrowserRouter>

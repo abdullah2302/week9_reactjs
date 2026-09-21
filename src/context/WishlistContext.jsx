@@ -1,20 +1,39 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { wishlistApi } from "../api/wishlistApi";
+import { useAuth } from "./AuthContext";
 
 const WishlistContext = createContext(null);
 
+function normalizeProduct(p) {
+    return { ...p, id: p._id };
+}
+
 export function WishlistProvider({ children }) {
+    const { isAuthenticated } = useAuth();
     const [wishlistItems, setWishlistItems] = useState([]);
 
-    function addToWishlist(product) {
-        setWishlistItems((prev) => {
-            const alreadyIn = prev.some((item) => item.id === product.id);
-            if (alreadyIn) return prev;
-            return [...prev, product];
-        });
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setWishlistItems([]);
+            return;
+        }
+
+        wishlistApi
+            .get()
+            .then((wl) =>
+                setWishlistItems((wl.products || []).map(normalizeProduct))
+            )
+            .catch(() => setWishlistItems([]));
+    }, [isAuthenticated]);
+
+    async function addToWishlist(product) {
+        const wl = await wishlistApi.add(product._id || product.id);
+        setWishlistItems((wl.products || []).map(normalizeProduct));
     }
 
-    function removeFromWishlist(id) {
-        setWishlistItems((prev) => prev.filter((item) => item.id !== id));
+    async function removeFromWishlist(id) {
+        const wl = await wishlistApi.remove(id);
+        setWishlistItems((wl.products || []).map(normalizeProduct));
     }
 
     function isInWishlist(id) {
@@ -25,7 +44,13 @@ export function WishlistProvider({ children }) {
 
     return (
         <WishlistContext.Provider
-            value={{ wishlistItems, addToWishlist, removeFromWishlist, isInWishlist, wishlistCount }}
+            value={{
+                wishlistItems,
+                addToWishlist,
+                removeFromWishlist,
+                isInWishlist,
+                wishlistCount,
+            }}
         >
             {children}
         </WishlistContext.Provider>

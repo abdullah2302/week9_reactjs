@@ -1,40 +1,52 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { cartApi } from "../api/cartApi";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
 
+// Normalizes a backend cart item ({ product: {...}, qty }) into the flat
+// shape the rest of the UI already expects ({ id, name, price, qty, ... }).
+function flattenItem(item) {
+    return { ...item.product, id: item.product._id, qty: item.qty };
+}
+
 export function CartProvider({ children }) {
+    const { isAuthenticated } = useAuth();
     const [cartItems, setCartItems] = useState([]);
 
-    function addToCart(product) {
-        setCartItems((prev) => {
-            const existing = prev.find((item) => item.id === product.id);
+    // Load the cart from the API whenever auth state changes — on login,
+    // fetch the user's saved cart; on logout, clear it locally.
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setCartItems([]);
+            return;
+        }
 
-            if (existing) {
-                return prev.map((item) =>
-                    item.id === product.id
-                        ? { ...item, qty: item.qty + 1 }
-                        : item
-                );
-            }
+        cartApi
+            .get()
+            .then((cart) => setCartItems((cart.items || []).map(flattenItem)))
+            .catch(() => setCartItems([]));
+    }, [isAuthenticated]);
 
-            return [...prev, { ...product, qty: 1 }];
-        });
+    async function addToCart(product) {
+        const cart = await cartApi.add(product._id || product.id, 1);
+        setCartItems((cart.items || []).map(flattenItem));
     }
 
-    function removeFromCart(id) {
-        setCartItems((prev) => prev.filter((item) => item.id !== id));
+    async function removeFromCart(id) {
+        const cart = await cartApi.remove(id);
+        setCartItems((cart.items || []).map(flattenItem));
     }
 
-    function updateQty(id, qty) {
+    async function updateQty(id, qty) {
         if (qty < 1) return;
-        setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, qty } : item))
-        );
+        const cart = await cartApi.updateQty(id, qty);
+        setCartItems((cart.items || []).map(flattenItem));
     }
 
-    // function to clear all cart items
-    function clearCart() {
-        setCartItems([]);
+    async function clearCart() {
+        const cart = await cartApi.clear();
+        setCartItems((cart.items || []).map(flattenItem));
     }
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);

@@ -7,7 +7,7 @@ import {useAuth} from "../context/AuthContext";
 
 function Cart() {
     const { cartItems, removeFromCart, updateQty, cartTotal, clearCart } = useCart();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     
 
     if (cartItems.length === 0) {
@@ -131,9 +131,18 @@ function Cart() {
                             <span>${cartTotal.toFixed(2)}</span>
                         </div>
 
-                        <button className="w-full rounded-full bg-slate-900 py-3 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:hover:bg-slate-300 dark:text-slate-800">
-                            Proceed to Checkout
-                        </button>
+                        {user?.role === "admin" ? (
+                            <p className="rounded-lg bg-slate-100 px-4 py-3 text-center text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                Admins can manage orders only.
+                            </p>
+                        ) : (
+                            <Link
+                                to="/checkout"
+                                className="block w-full rounded-full bg-slate-900 py-3 text-center text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300"
+                            >
+                                Proceed to Checkout
+                            </Link>
+                        )}
 
                         <Link
                             to="/products"
