@@ -1,7 +1,7 @@
 import ProductCard from "./ProductCard";
 import EmptyState from "./EmptyState";
 
-function ProductList({ products, onAddToCart, onDelete }) {
+function ProductList({ products, onAddToCart, onDelete, onEdit }) {
     if (products.length === 0) {
         return (
             <EmptyState>
@@ -20,6 +20,7 @@ function ProductList({ products, onAddToCart, onDelete }) {
                     product={product}
                     onAddToCart={onAddToCart}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                 />
             ))}
         </div>

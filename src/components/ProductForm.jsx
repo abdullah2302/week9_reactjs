@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-function ProductForm({ onAddProduct }) {
-    const [name, setName] = useState("");
-    
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
-    const [price, setPrice] = useState("");
-    const [image, setImage] = useState(null);
+function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
+    const [name, setName] = useState(product?.name || "");
+    const [description, setDescription] = useState(product?.description || "");
+    const [category, setCategory] = useState(product?.category || "");
+    const [price, setPrice] = useState(product?.price ?? "");
+    const [image, setImage] = useState(product?.image || null);
+
+    useEffect(() => {
+        setName(product?.name || "");
+        setDescription(product?.description || "");
+        setCategory(product?.category || "");
+        setPrice(product?.price ?? "");
+        setImage(product?.image || null);
+    }, [product]);
 
      function handleImageChange(e) {
         const file = e.target.files[0];
@@ -31,17 +38,25 @@ function ProductForm({ onAddProduct }) {
             return;
         }
 
-        onAddProduct({
+        const productData = {
             name: name.trim(),
             description: description.trim(),
             category: category.trim(),
             price: Number(price),
             image: image,
-        });
+        };
+
+        if (product && onSubmit) {
+            onSubmit(productData);
+        } else {
+            onAddProduct(productData);
+        }
 
         setName("");
+        setDescription("");
         setCategory("");
         setPrice("");
+        setImage(null);
     }
 
     return (
@@ -51,7 +66,7 @@ function ProductForm({ onAddProduct }) {
         >
             <div className="flex-1 basis-full">
                 <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-200">
-                    Quick Add Product (demo)
+                    {product ? "Edit Product" : "Add Product"}
                 </p>
             </div>
 
@@ -105,9 +120,18 @@ function ProductForm({ onAddProduct }) {
                 type="submit"
                 className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500"
             >
-                <FontAwesomeIcon icon={faPlus} className="text-xs" />
-                Add Product
+                <FontAwesomeIcon icon={product ? faPen : faPlus} className="text-xs" />
+                {product ? "Save Changes" : "Add Product"}
             </button>
+            {product && (
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-white"
+                >
+                    Cancel
+                </button>
+            )}
         </form>
     );
 }

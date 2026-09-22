@@ -21,7 +21,7 @@ import AccountLayout from "./pages/account/AccountLayout";
 import Orders from "./pages/account/Orders";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
-// import AdminProducts from "./pages/admin/AdminProducts";
+import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 
 import NotFound from "./pages/NotFound";
@@ -128,14 +128,14 @@ function App() {
                             }
                         />
 
-                        {/* <Route
+                        <Route
                             path="/admin/products"
                             element={
                                 <AdminRoute>
                                     <AdminProducts />
                                 </AdminRoute>
                             }
-                        /> */}
+                        />
 
                         <Route
                             path="/admin/orders"

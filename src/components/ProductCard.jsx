@@ -4,13 +4,14 @@ import {
     faCartPlus,
     faTrash,
     faHeart,
+    faPen,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
-function ProductCard({ product, onAddToCart, onDelete }) {
+function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const { isAuthenticated } = useAuth();
 
@@ -101,7 +102,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                     <div className="flex items-center flex-wrap items-center justify-center gap-2">
 
                         {/* Add to Cart / Wishlist */}
-                        {inStock ? (
+                        {onAddToCart && inStock ? (
                             <button
                                 onClick={handleAddToCart}
                                 className="flex items-center shrink-0 gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
@@ -112,7 +113,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                                 />
                                 Add
                             </button>
-                        ) : (
+                        ) : onAddToCart ? (
                             <button
                                 onClick={handleWishlistToggle}
                                 className={`flex items-center shrink-0 gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
@@ -128,10 +129,20 @@ function ProductCard({ product, onAddToCart, onDelete }) {
 
                                 {inWishlist ? "Wishlisted" : "Wishlist"}
                             </button>
-                        )}
+                        ) : null}
 
                         {/* Delete */}
                         {onDelete && (
+                            <>
+                            {onEdit && (
+                                <button
+                                    onClick={() => onEdit(product)}
+                                    aria-label={`Edit ${product.name}`}
+                                    className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:hover:border-white dark:hover:text-white"
+                                >
+                                    <FontAwesomeIcon icon={faPen} className="text-sm" />
+                                </button>
+                            )}
                             <button
                                 onClick={() => onDelete(product.id)}
                                 aria-label="Remove product"
@@ -142,6 +153,7 @@ function ProductCard({ product, onAddToCart, onDelete }) {
                                     className="text-sm"
                                 />
                             </button>
+                            </>
                         )}
                     </div>
                 </div>

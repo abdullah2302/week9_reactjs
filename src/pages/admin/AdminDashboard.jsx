@@ -18,7 +18,7 @@ function AdminDashboard() {
                     </h2>
 
                     <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                        Add and delete products.
+                        Add, edit, and delete products.
                     </p>
                 </Link>
 
