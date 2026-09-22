@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ordersApi } from "../../api/ordersApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
+import { getOrderStatusSelectClass } from "../../components/OrderStatusBadge";
 
 const statuses = [
     "pending",
@@ -124,13 +125,14 @@ function AdminOrders() {
                                             e.target.value
                                         )
                                     }
-                                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm capitalize outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    className={`rounded-lg border-0 px-3 py-2 text-sm capitalize outline-none ${getOrderStatusSelectClass(order.status)}`}
                                 >
                                     {statuses.map(
                                         (status) => (
                                             <option
                                                 key={status}
                                                 value={status}
+                                                className={getOrderStatusSelectClass(status)}
                                             >
                                                 {status}
                                             </option>

@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCartShopping,
@@ -11,10 +11,10 @@ import {
     faUser,
     faMoon,
     faSun,
-    faGauge,
     faBox,
     faClipboardList,
     faBell,
+    faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { useCart } from "../context/CartContext";
@@ -24,23 +24,26 @@ import { useTheme } from "../context/ThemeContext";
 import { useNotifications } from "../context/NotificationContext";
 
 function Navbar() {
+    const navigate = useNavigate();
     const { cartCount } = useCart();
     const { wishlistCount } = useWishlist();
     const { isAuthenticated, user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { notifications, unreadCount, markRead } = useNotifications();
+    const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
 const notificationRef = useRef(null);
+    const adminMenuRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
     
     //when click outside of the notification dropdown, close it
     useEffect(() => {
     const handleClickOutside = (event) => {
-        if (
-            notificationRef.current &&
-            !notificationRef.current.contains(event.target)
-        ) {
+        if (notificationRef.current && !notificationRef.current.contains(event.target)) {
             setIsNotificationOpen(false);
+        }
+        if (adminMenuRef.current && !adminMenuRef.current.contains(event.target)) {
+            setIsAdminMenuOpen(false);
         }
     };
 
@@ -53,6 +56,7 @@ const notificationRef = useRef(null);
 
     function closeMenu() {
         setIsMenuOpen(false);
+        setIsAdminMenuOpen(false);
     }
 
     const linkClass = ({ isActive }) =>
@@ -76,6 +80,30 @@ const notificationRef = useRef(null);
     function handleLogout() {
         logout();
         closeMenu();
+    }
+
+    async function handleNotificationClick(notification) {
+        try {
+            await markRead(notification._id);
+        } catch {
+            // Navigation should not depend on the read-status request.
+        } finally {
+            setIsNotificationOpen(false);
+        }
+
+        if (notification.order) {
+            navigate(
+                user?.role === "admin" ? "/admin/orders" : "/account/orders"
+            );
+        }
+    }
+
+    async function handleMarkAllRead() {
+        try {
+            await markAllRead();
+        } catch {
+            // Keep the dropdown available if the request fails.
+        }
     }
 
     return (
@@ -168,9 +196,19 @@ const notificationRef = useRef(null);
 
                             {isNotificationOpen && (
                                 <div className="absolute right-0 top-11 z-50 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-                                    <h2 className="mb-2 px-2 text-sm font-semibold text-slate-900 dark:text-white">
-                                        Notifications
-                                    </h2>
+                                    <div className="mb-2 flex items-center justify-between px-2">
+                                        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                                            Notifications
+                                        </h2>
+                                        {unreadCount > 0 && (
+                                            <button
+                                                onClick={handleMarkAllRead}
+                                                className="text-xs text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                                            >
+                                                Mark all read
+                                            </button>
+                                        )}
+                                    </div>
                                     {notifications.length === 0 ? (
                                         <p className="px-2 py-4 text-sm text-slate-500">
                                             No notifications yet.
@@ -180,7 +218,7 @@ const notificationRef = useRef(null);
                                             {notifications.map((notification) => (
                                                 <button
                                                     key={notification._id}
-                                                    onClick={() => markRead(notification._id)}
+                                                    onClick={() => handleNotificationClick(notification)}
                                                     className={`w-full rounded-lg px-2 py-2 text-left text-sm ${notification.read ? "text-slate-500" : "bg-slate-100 font-medium text-slate-900 dark:bg-slate-800 dark:text-white"}`}
                                                 >
                                                     {notification.message}
@@ -211,9 +249,10 @@ const notificationRef = useRef(null);
 
                             {/* Admin */}
                             {user?.role === "admin" ? (
-                                <>
-                                    <Link
-                                        to="/admin"
+                                <div ref={adminMenuRef} className="relative">
+                                    <button
+                                        onClick={() => setIsAdminMenuOpen((open) => !open)}
+                                        aria-expanded={isAdminMenuOpen}
                                         className="flex items-center gap-1.5 text-sm text-slate-700 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                                     >
                                         <FontAwesomeIcon
@@ -221,15 +260,30 @@ const notificationRef = useRef(null);
                                             className="text-xs"
                                         />
                                         {user?.name}
-                                    </Link>
+                                        <FontAwesomeIcon icon={faChevronDown} className="text-[10px]" />
+                                    </button>
 
-                                    <Link
-                                        to="/admin"
-                                        className="text-sm text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                                    >
-                                        Admin
-                                    </Link>
-                                </>
+                                    {isAdminMenuOpen && (
+                                        <div className="absolute right-0 top-9 z-50 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                                            <Link
+                                                to="/admin/products"
+                                                onClick={closeMenu}
+                                                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                                            >
+                                                <FontAwesomeIcon icon={faBox} className="text-xs" />
+                                                Manage Products
+                                            </Link>
+                                            <Link
+                                                to="/admin/orders"
+                                                onClick={closeMenu}
+                                                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                                            >
+                                                <FontAwesomeIcon icon={faClipboardList} className="text-xs" />
+                                                Manage Orders
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 /* Normal User */
                                 <>
@@ -358,18 +412,6 @@ const notificationRef = useRef(null);
                             <>
                                 {user?.role === "admin" ? (
                                     <>
-                                        <NavLink
-                                            to="/admin"
-                                            className={mobileLinkClass}
-                                            onClick={closeMenu}
-                                        >
-                                            <FontAwesomeIcon
-                                                icon={faGauge}
-                                                className="mr-2"
-                                            />
-                                            Admin Dashboard
-                                        </NavLink>
-
                                         <NavLink
                                             to="/admin/products"
                                             className={mobileLinkClass}

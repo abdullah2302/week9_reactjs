@@ -20,7 +20,6 @@ import Checkout from "./pages/Checkout";
 import AccountLayout from "./pages/account/AccountLayout";
 import Orders from "./pages/account/Orders";
 
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 
@@ -118,15 +117,6 @@ function App() {
                         </Route>
 
                         {/* ================= ADMIN ROUTES ================= */}
-
-                        <Route
-                            path="/admin"
-                            element={
-                                <AdminRoute>
-                                    <AdminDashboard />
-                                </AdminRoute>
-                            }
-                        />
 
                         <Route
                             path="/admin/products"

@@ -45,13 +45,20 @@ export function NotificationProvider({ children }) {
         );
     }
 
+    async function markAllRead() {
+        await notificationsApi.markAllRead();
+        setNotifications((current) =>
+            current.map((notification) => ({ ...notification, read: true }))
+        );
+    }
+
     const unreadCount = notifications.filter(
         (notification) => !notification.read
     ).length;
 
     return (
         <NotificationContext.Provider
-            value={{ notifications, unreadCount, markRead }}
+            value={{ notifications, unreadCount, markRead, markAllRead }}
         >
             {children}
         </NotificationContext.Provider>

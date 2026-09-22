@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ordersApi } from "../../api/ordersApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
+import OrderStatusBadge from "../../components/OrderStatusBadge";
 
 function Orders() {
     const [orders, setOrders] = useState([]);
@@ -68,9 +69,7 @@ function Orders() {
                                     </p>
                                 </div>
 
-                                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium capitalize text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                    {order.status}
-                                </span>
+                                <OrderStatusBadge status={order.status} />
                             </div>
 
                             <div className="space-y-4">
