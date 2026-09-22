@@ -53,7 +53,11 @@ function App() {
 
                         <Route
                             path="/cart"
-                            element={<Cart />}
+                            element={
+                                <ProtectedRoute>
+                                    <Cart />
+                                </ProtectedRoute>
+                            }
                         />
 
                         <Route

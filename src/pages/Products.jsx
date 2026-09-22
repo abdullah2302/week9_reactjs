@@ -13,6 +13,19 @@ function normalize(product) {
     return { ...product, id: product._id };
 }
 
+// Module-level cache: lives outside the component, so it survives
+// Products being unmounted/remounted (e.g. navigating away via Navbar and
+// back). Keyed by the request params, so different page/search/category
+// combos each get their own cached snapshot. Only used to skip the
+// loading spinner on a repeat visit — the effect below still refetches
+// fresh data every time, it just doesn't block the UI on it when a
+// cached snapshot is available.
+const productsCache = new Map();
+
+function cacheKey(params) {
+    return JSON.stringify(params);
+}
+
 function Products() {
     const { user } = useAuth();
     const { addToCart } = useCart();
@@ -45,19 +58,33 @@ function Products() {
 
     useEffect(() => {
         const controller = new AbortController();
-        setLoading(true);
-        setError("");
+        const key = cacheKey(requestParams);
+        const cached = productsCache.get(key);
+
+        if (cached) {
+          
+            setProducts(cached.products.map(normalize));
+            setCategories(["All", ...cached.categories]);
+            setPagination(cached.pagination);
+            setError("");
+            setLoading(false);
+        } else {
+            setLoading(true);
+            setError("");
+        }
 
         productsApi
             .getAll(requestParams, { signal: controller.signal })
             .then((data) => {
+                productsCache.set(key, data);
                 setProducts(data.products.map(normalize));
                 setCategories(["All", ...data.categories]);
                 setPagination(data.pagination);
             })
             .catch((err) => {
                 if (err.name !== "CanceledError" && err.name !== "AbortError") {
-                    setError(err.message);
+                    
+                    if (!cached) setError(err.message);
                 }
             })
             .finally(() => setLoading(false));
@@ -68,11 +95,13 @@ function Products() {
     const handleAddProduct = useCallback(async (newProduct) => {
         const created = await productsApi.create(newProduct);
         setProducts((prev) => [...prev, normalize(created)]);
+        productsCache.clear(); // stale now — next visit should refetch
     }, []);
 
     const handleDeleteProduct = useCallback(async (id) => {
         await productsApi.remove(id);
         setProducts((prev) => prev.filter((p) => p.id !== id));
+        productsCache.clear();
     }, []);
 
     const handleCategoryChange = useCallback((category) => {
