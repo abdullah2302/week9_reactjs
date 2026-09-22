@@ -36,7 +36,9 @@ function ProductDetail() {
         : null;
     const quantity = cartItem?.qty || 0;
 
-    const inStock = product ? product.inStock !== false : true;
+    const inStock = product ? product.inStock !== false && (
+        product.stockQuantity === undefined || product.stockQuantity > 0
+    ) : true;
     const inWishlist = product ? isInWishlist(product.id) : false;
 
     function handleWishlistToggle() {
@@ -138,6 +140,12 @@ function ProductDetail() {
                         ${product.price}
                     </div>
 
+                    {inStock && product.stockQuantity !== undefined && (
+                        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                            {product.stockQuantity} available
+                        </p>
+                    )}
+
                     {!inStock && (
                         <p className="mb-4 text-sm font-medium text-red-500">
                             Currently out of stock
@@ -179,6 +187,7 @@ function ProductDetail() {
 
                             <button
                                 onClick={() => updateQty(product.id, quantity + 1)}
+                                disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
                                 className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:text-white"
                             >
                                 +

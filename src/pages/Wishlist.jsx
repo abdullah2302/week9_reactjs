@@ -38,7 +38,9 @@ function Wishlist() {
 
             <div className="divide-y divide-slate-100">
                 {wishlistItems.map((item) => {
-                    const inStock = item.inStock !== false;
+                    const inStock = item.inStock !== false && (
+                        item.stockQuantity === undefined || item.stockQuantity > 0
+                    );
 
                     return (
                         <div

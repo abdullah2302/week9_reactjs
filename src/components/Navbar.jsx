@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -29,9 +29,31 @@ function Navbar() {
     const { isAuthenticated, user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markRead } = useNotifications();
-
+const notificationRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    
+    //when click outside of the notification dropdown, close it
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (
+            notificationRef.current &&
+            !notificationRef.current.contains(event.target)
+        ) {
+            setIsNotificationOpen(false);
+        }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+}, []);
+
+    function closeMenu() {
+        setIsMenuOpen(false);
+    }
 
     const linkClass = ({ isActive }) =>
         `text-sm transition ${
@@ -130,7 +152,7 @@ function Navbar() {
                     </Link>
 
                     {isAuthenticated && (
-                        <div className="relative">
+                        <div ref={notificationRef} className="relative">
                             <button
                                 onClick={() => setIsNotificationOpen((open) => !open)}
                                 aria-label="Notifications"

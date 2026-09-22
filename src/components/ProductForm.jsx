@@ -8,6 +8,10 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
     const [category, setCategory] = useState(product?.category || "");
     const [price, setPrice] = useState(product?.price ?? "");
     const [image, setImage] = useState(product?.image || null);
+    const [inStock, setInStock] = useState(product?.inStock !== false);
+    const [stockQuantity, setStockQuantity] = useState(
+        product?.stockQuantity ?? (product?.inStock === false ? 0 : 1)
+    );
 
     useEffect(() => {
         setName(product?.name || "");
@@ -15,6 +19,8 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
         setCategory(product?.category || "");
         setPrice(product?.price ?? "");
         setImage(product?.image || null);
+        setInStock(product?.inStock !== false);
+        setStockQuantity(product?.stockQuantity ?? (product?.inStock === false ? 0 : 1));
     }, [product]);
 
      function handleImageChange(e) {
@@ -33,7 +39,7 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
     function handleSubmit(e) {
         e.preventDefault();
 
-        if (!name.trim() || !category.trim() || !price) {
+        if (!name.trim() || !category.trim() || !price || stockQuantity < 0) {
             alert("Please fill all fields");
             return;
         }
@@ -44,6 +50,8 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
             category: category.trim(),
             price: Number(price),
             image: image,
+            inStock,
+            stockQuantity: Number(stockQuantity),
         };
 
         if (product && onSubmit) {
@@ -57,6 +65,8 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
         setCategory("");
         setPrice("");
         setImage(null);
+        setInStock(true);
+        setStockQuantity(1);
     }
 
     return (
@@ -99,6 +109,24 @@ function ProductForm({ onAddProduct, onSubmit, product, onCancel }) {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className="min-w-[100px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:placeholder-slate-300"
+            />
+            <label className="flex items-center gap-2 px-1 py-2 text-sm text-slate-700 dark:text-slate-300">
+                <input
+                    type="checkbox"
+                    checked={inStock}
+                    onChange={(e) => setInStock(e.target.checked)}
+                    className="h-4 w-4 accent-slate-900"
+                />
+                In stock
+            </label>
+            <input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Stock quantity"
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(e.target.value)}
+                className="min-w-[120px] flex-1 border-b border-slate-200 bg-transparent px-1 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:focus:border-slate-400 dark:text-slate-200 dark:placeholder-slate-500"
             />
              <button
                 type="button"

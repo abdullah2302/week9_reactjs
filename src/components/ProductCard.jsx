@@ -18,7 +18,9 @@ function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const inStock = product.inStock !== false;
+    const inStock = product.inStock !== false && (
+        product.stockQuantity === undefined || product.stockQuantity > 0
+    );
     const inWishlist = isInWishlist(product.id);
     const linkTo = `/products/${product.id}`;
     console.log(linkTo);
@@ -71,11 +73,13 @@ function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
                         />
                     ) : null}
 
-                    {!inStock && (
-                        <span className="absolute left-2 top-2 rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white dark:bg-white dark:text-slate-900">
-                            Out of Stock
-                        </span>
-                    )}
+                    <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                        inStock
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                            : "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                    }`}>
+                        {inStock ? "In Stock" : "Out of Stock"}
+                    </span>
                 </div>
             </Link>
 
@@ -91,6 +95,12 @@ function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
                 <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-400">
                     {product.category}
                 </p>
+
+                {onEdit && (
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Quantity: {product.stockQuantity ?? "-"}
+                    </p>
+                )}
 
                 <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2">
 
