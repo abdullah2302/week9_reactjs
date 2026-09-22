@@ -131,9 +131,7 @@ function Products() {
             </h1>
 
 
-            {user && user.role === "admin" && (
-                <ProductForm onAddProduct={handleAddProduct} />
-            )}
+           
 
             <FilterBar
                 categories={categories}
