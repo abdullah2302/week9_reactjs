@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCartPlus, faCircleExclamation, faHeart } from '@fortawesome/free-solid-svg-icons';
@@ -41,21 +41,37 @@ function ProductDetail() {
     ) : true;
     const inWishlist = product ? isInWishlist(product.id) : false;
 
-    function handleWishlistToggle() {
-        if (inWishlist) {
-            removeFromWishlist(product.id);
-        } else {
-            addToWishlist(product);
-        }
+    const handleWishlistToggle = useCallback(() => {
+    if (!product) return;
+
+    if (inWishlist) {
+        removeFromWishlist(product.id);
+    } else {
+        addToWishlist(product);
+    }
+}, [
+    product,
+    inWishlist,
+    addToWishlist,
+    removeFromWishlist,
+]);
+
+const handleAddToCart = useCallback(() => {
+    if (!product) return;
+
+    if (!isAuthenticated) {
+        navigate("/login", { state: { from: location } });
+        return;
     }
 
-    function handleAddToCart() {
-        if (!isAuthenticated) {
-            navigate("/login", { state: { from: location } });
-            return;
-        }
-        addToCart(product);
-    }
+    addToCart(product);
+}, [
+    product,
+    isAuthenticated,
+    navigate,
+    location,
+    addToCart,
+]);
 
     useEffect(() => {
         if (!product) return;

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { cartApi } from "../api/cartApi";
 import { useAuth } from "./AuthContext";
 
@@ -13,6 +13,7 @@ function flattenItem(item) {
 export function CartProvider({ children }) {
     const { isAuthenticated } = useAuth();
     const [cartItems, setCartItems] = useState([]);
+    const quantityRequests = useRef(new Map());
 
     // Load the cart from the API whenever auth state changes — on login,
     // fetch the user's saved cart; on logout, clear it locally.
@@ -39,9 +40,35 @@ export function CartProvider({ children }) {
     }
 
     async function updateQty(id, qty) {
-        if (qty < 1) return;
-        const cart = await cartApi.updateQty(id, qty);
-        setCartItems((cart.items || []).map(flattenItem));
+        if (qty < 0) return;
+
+        // Update the counter immediately; the request is persisted in order below.
+        setCartItems((current) => {
+            if (qty === 0) {
+                return current.filter((item) => item.id !== id);
+            }
+
+            return current.map((item) =>
+                item.id === id ? { ...item, qty } : item
+            );
+        });
+
+        const previousRequest = quantityRequests.current.get(id) || Promise.resolve();
+        const request = previousRequest
+            .catch(() => undefined)
+            .then(() => cartApi.updateQty(id, qty))
+            .catch(async () => {
+                // Restore the server state if an optimistic update fails.
+                const cart = await cartApi.get();
+                setCartItems((cart.items || []).map(flattenItem));
+            });
+
+        quantityRequests.current.set(id, request);
+        await request;
+
+        if (quantityRequests.current.get(id) === request) {
+            quantityRequests.current.delete(id);
+        }
     }
 
     async function clearCart() {
