@@ -45,7 +45,7 @@ function ChatWidget() {
     }
 
     const socketUrl = useMemo(() => {
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl = import.meta.env.VITE_CLIENT_ORIGIN;
         return apiUrl ? new URL(apiUrl, window.location.origin).origin : window.location.origin;
     }, []);
 
