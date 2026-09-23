@@ -2,6 +2,7 @@
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
+import ChatWidget from "./components/ChatWidget";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -36,7 +37,7 @@ function App() {
 
                 <div className="flex-1">
                     <Routes>
-                        {/* ================= PUBLIC ROUTES ================= */}
+                        {/* PUBLIC ROUTES */}
 
                         <Route path="/" element={<Home />} />
 
@@ -79,7 +80,7 @@ function App() {
                             element={<Signup />}
                         />
 
-                        {/* ================= PROTECTED CHECKOUT ================= */}
+                        {/*  PROTECTED CHECKOUT */}
 
                         <Route
                             path="/checkout"
@@ -90,7 +91,7 @@ function App() {
                             }
                         />
 
-                        {/* ================= USER ACCOUNT ================= */}
+                        {/*  USER ACCOUNT  */}
 
                         <Route
                             path="/account"
@@ -116,7 +117,7 @@ function App() {
                             />
                         </Route>
 
-                        {/* ================= ADMIN ROUTES ================= */}
+                        {/*  ADMIN ROUTES */}
 
                         <Route
                             path="/admin/products"
@@ -136,7 +137,7 @@ function App() {
                             }
                         />
 
-                        {/* ================= 404 ================= */}
+                        {/* 404  */}
 
                         <Route
                             path="*"
@@ -146,6 +147,7 @@ function App() {
                 </div>
 
                 <Footer />
+                <ChatWidget />
             </div>
 
             <ToastContainer />

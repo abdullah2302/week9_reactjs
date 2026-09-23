@@ -7,6 +7,7 @@ import { WishlistProvider } from "./context/WishlistContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
+
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(

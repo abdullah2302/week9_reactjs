@@ -6,20 +6,11 @@ import ProductList from "../components/ProductList";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import Pagination from "../components/Pagination";
-
-// Mongo documents use _id — flatten to id so every existing component
-// (ProductCard, ProductDetail, Cart, Wishlist) keeps working unchanged.
 function normalize(product) {
     return { ...product, id: product._id };
 }
 
-// Module-level cache: lives outside the component, so it survives
-// Products being unmounted/remounted (e.g. navigating away via Navbar and
-// back). Keyed by the request params, so different page/search/category
-// combos each get their own cached snapshot. Only used to skip the
-// loading spinner on a repeat visit — the effect below still refetches
-// fresh data every time, it just doesn't block the UI on it when a
-// cached snapshot is available.
+
 const productsCache = new Map();
 
 function cacheKey(params) {

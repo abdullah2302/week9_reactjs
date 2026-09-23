@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import { notificationsApi } from "../api/notificationsApi";
 import { useAuth } from "./AuthContext";
 
@@ -26,11 +27,25 @@ export function NotificationProvider({ children }) {
         };
 
         loadNotifications();
-        const interval = window.setInterval(loadNotifications, 10000);
+
+        const token = localStorage.getItem("token");
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const socketUrl = apiUrl
+            ? new URL(apiUrl, window.location.origin).origin
+            : window.location.origin;
+        const socket = io(socketUrl, { auth: { token } });
+
+        socket.on("connect", loadNotifications);
+        socket.on("notification:new", (notification) => {
+            setNotifications((current) => [
+                notification,
+                ...current.filter((item) => item._id !== notification._id),
+            ].slice(0, 30));
+        });
 
         return () => {
             active = false;
-            window.clearInterval(interval);
+            socket.disconnect();
         };
     }, [isAuthenticated]);
 

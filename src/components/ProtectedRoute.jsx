@@ -5,9 +5,7 @@ function ProtectedRoute({ children, customerOnly = false }) {
     const { user, isAuthenticated, loading } = useAuth();
     const location = useLocation();
 
-    // Wait until the initial getMe() check (see AuthContext) resolves —
-    // otherwise a valid session gets bounced to /login for a split second
-    // on every page refresh, before the token has been verified.
+    
     if (loading) {
         return null;
     }

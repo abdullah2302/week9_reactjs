@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCartPlus, faCircleExclamation, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCartPlus, faCircleExclamation, faComments, faHeart } from '@fortawesome/free-solid-svg-icons';
 import { productsApi } from "../api/productsApi";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -14,7 +14,8 @@ function ProductDetail() {
     const location = useLocation();
     const { addToCart, updateQty, cartItems } = useCart();
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    const isAdmin = user?.role === "admin";
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -57,7 +58,7 @@ function ProductDetail() {
 ]);
 
 const handleAddToCart = useCallback(() => {
-    if (!product) return;
+    if (!product || isAdmin) return;
 
     if (!isAuthenticated) {
         navigate("/login", { state: { from: location } });
@@ -68,10 +69,29 @@ const handleAddToCart = useCallback(() => {
 }, [
     product,
     isAuthenticated,
+    isAdmin,
     navigate,
     location,
     addToCart,
 ]);
+
+    function handleAskAdmin() {
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+
+        window.dispatchEvent(new CustomEvent("chat:open", {
+            detail: {
+                product: {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                },
+            },
+        }));
+    }
 
     useEffect(() => {
         if (!product) return;
@@ -180,6 +200,10 @@ const handleAddToCart = useCallback(() => {
                             <FontAwesomeIcon icon={faHeart} />
                             {inWishlist ? "Added to Wishlist" : "Add to Wishlist"}
                         </button>
+                    ) : isAdmin ? (
+                        <p className="rounded-full border border-slate-200 px-6 py-3 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                            Admin accounts cannot add products to cart.
+                        </p>
                     ) : quantity === 0 ? (
                         <button
                             onClick={handleAddToCart}
@@ -209,6 +233,16 @@ const handleAddToCart = useCallback(() => {
                                 +
                             </button>
                         </div>
+                    )}
+
+                    {!isAdmin && (
+                        <button
+                            onClick={handleAskAdmin}
+                            className="mt-3 flex items-center justify-center gap-2 rounded-full border border-slate-300 px-6 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
+                        >
+                            <FontAwesomeIcon icon={faComments} />
+                            Ask admin about this product
+                        </button>
                     )}
                     <div className="mt-8 space-y-2 border-t border-slate-100 pt-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
                         <p>Free delivery on orders over $50</p>
