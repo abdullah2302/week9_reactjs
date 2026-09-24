@@ -397,7 +397,7 @@ function ChatWidget() {
                                                 >
                                                     {isMine
                                                         ? "You · Sent"
-                                                        : `${message.sender.name} · Received`}
+                                                        : `${message.sender.name} ·`}
                                                 </span>
                                                 <span className="normal-case tracking-normal">
                                                     {formatMessageTime(message.createdAt)}
