@@ -25,13 +25,23 @@ export function AuthProvider({ children }) {
     }, []);
 
     async function signup(name, email, password) {
-        const data = await authApi.signup(name, email, password);
+        let data;
+        try {
+            data = await authApi.signup(name, email, password);
+        } catch (error) {
+            throw new Error(error.response?.data?.message || "Unable to create account");
+        }
         localStorage.setItem("token", data.token);
         setUser(data.user);
     }
 
     async function login(email, password) {
-        const data = await authApi.login(email, password);
+        let data;
+        try {
+            data = await authApi.login(email, password);
+        } catch (error) {
+            throw new Error(error.response?.data?.message || "Invalid email or password");
+        }
         localStorage.setItem("token", data.token);
         setUser(data.user);
     }
