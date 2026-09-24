@@ -1,21 +1,29 @@
 
 import { useEffect, useState } from "react";
 import { ordersApi } from "../../api/ordersApi";
+import { reviewsApi } from "../../api/reviewsApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
 import OrderStatusBadge from "../../components/OrderStatusBadge";
+import ReviewModal from "../../components/ReviewModal";
 
 function Orders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    const [reviewedKeys, setReviewedKeys] = useState(new Set());
+    const [reviewTarget, setReviewTarget] = useState(null);
 
     useEffect(() => {
         const loadOrders = async () => {
             try {
-                const data = await ordersApi.getMyOrders({ page: pagination.page, limit: 10 });
+                const [data, reviews] = await Promise.all([
+                    ordersApi.getMyOrders({ page: pagination.page, limit: 10 }),
+                    reviewsApi.getMyReviews(),
+                ]);
                 setOrders(data.orders);
                 setPagination(data.pagination);
+                setReviewedKeys(new Set(reviews.map((review) => `${review.order}:${review.product}`)));
             } catch (error) {
                 toast.error(
                     error.response?.data?.message ||
@@ -73,9 +81,13 @@ function Orders() {
                             </div>
 
                             <div className="space-y-4">
-                                {order.items.map((item) => (
+                                {order.items.map((item) => {
+                                    const productId = item.product?._id || item.product;
+                                    const reviewKey = `${order._id}:${productId}`;
+                                    const reviewed = reviewedKeys.has(reviewKey);
+                                    return (
                                     <div
-                                        key={item.product}
+                                        key={productId}
                                         className="flex items-center gap-4"
                                     >
                                         <img
@@ -94,15 +106,23 @@ function Orders() {
                                             </p>
                                         </div>
 
-                                        <p className="text-sm font-medium text-slate-900 dark:text-white">
-                                            $
-                                            {(
-                                                item.price *
-                                                item.quantity
-                                            ).toFixed(2)}
-                                        </p>
+                                        <div className="text-right">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                                ${(item.price * item.quantity).toFixed(2)}
+                                            </p>
+                                            {order.status === "delivered" && (
+                                                reviewed ? (
+                                                    <span className="mt-1 block text-xs text-emerald-600 dark:text-emerald-400">Reviewed</span>
+                                                ) : (
+                                                    <button onClick={() => setReviewTarget({ orderId: order._id, product: { ...item, _id: productId } })} className="mt-1 text-xs font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                                                        Review Product
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             <div className="mt-6 border-t border-slate-200 pt-5 dark:border-slate-800">
@@ -125,6 +145,18 @@ function Orders() {
                 totalPages={pagination.totalPages}
                 onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
             />
+            {reviewTarget && (
+                <ReviewModal
+                    orderId={reviewTarget.orderId}
+                    product={reviewTarget.product}
+                    onClose={() => setReviewTarget(null)}
+                    onSubmitted={() => {
+                        setReviewedKeys((current) => new Set([...current, `${reviewTarget.orderId}:${reviewTarget.product._id}`]));
+                        setReviewTarget(null);
+                        toast.success("Review submitted");
+                    }}
+                />
+            )}
         </div>
     );
 }

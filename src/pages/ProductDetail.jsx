@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCartPlus, faCircleExclamation, faComments, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCartPlus, faCircleExclamation, faComments, faHeart, faStar } from '@fortawesome/free-solid-svg-icons';
 import { productsApi } from "../api/productsApi";
+import { reviewsApi } from "../api/reviewsApi";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +21,7 @@ function ProductDetail() {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const [reviewData, setReviewData] = useState({ reviews: [], summary: { average: 0, total: 0, distribution: [] } });
 
     useEffect(() => {
         setLoading(true);
@@ -31,6 +33,15 @@ function ProductDetail() {
             .catch(() => setNotFound(true))
             .finally(() => setLoading(false));
     }, [id]);
+
+    useEffect(() => {
+        if (!product) return;
+
+        reviewsApi
+            .getProductReviews(product.id)
+            .then(setReviewData)
+            .catch(() => setReviewData({ reviews: [], summary: { average: 0, total: 0, distribution: [] } }));
+    }, [product]);
 
     const cartItem = product
         ? cartItems.find((item) => item.id === product.id)
@@ -250,6 +261,55 @@ const handleAddToCart = useCallback(() => {
                     </div>
                 </div>
             </div>
+
+            <section className="mt-16 border-t border-slate-200 pt-10 dark:border-slate-700">
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Customer Reviews</h2>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {reviewData.summary.total === 0
+                                ? "No reviews yet. Be the first to review this product."
+                                : `${reviewData.summary.total} review${reviewData.summary.total === 1 ? "" : "s"}`}
+                        </p>
+                    </div>
+                    {reviewData.summary.total > 0 && (
+                        <div className="flex items-center gap-2 text-amber-400">
+                            <span className="text-2xl font-semibold text-slate-900 dark:text-white">{reviewData.summary.average}</span>
+                            <span className="flex gap-0.5">{[1, 2, 3, 4, 5].map((star) => <FontAwesomeIcon key={star} icon={faStar} className={star <= Math.round(reviewData.summary.average) ? "" : "text-slate-300 dark:text-slate-600"} />)}</span>
+                            <span className="text-sm text-slate-500 dark:text-slate-400">/ 5</span>
+                        </div>
+                    )}
+                </div>
+
+                {reviewData.summary.total > 0 && (
+                    <div className="mb-8 max-w-sm space-y-2">
+                        {reviewData.summary.distribution.map((entry) => (
+                            <div key={entry.rating} className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="w-8">{entry.rating} star</span>
+                                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                                    <div className="h-full rounded-full bg-amber-400" style={{ width: `${(entry.count / reviewData.summary.total) * 100}%` }} />
+                                </div>
+                                <span className="w-5 text-right">{entry.count}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    {reviewData.reviews.map((review) => (
+                        <article key={review._id} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="font-medium text-slate-900 dark:text-white">{review.user?.name || "Customer"}</p>
+                                    <p className="text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <span className="flex gap-0.5 text-amber-400">{[1, 2, 3, 4, 5].map((star) => <FontAwesomeIcon key={star} icon={faStar} className={star <= review.rating ? "" : "text-slate-300 dark:text-slate-600"} />)}</span>
+                            </div>
+                            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{review.comment}</p>
+                        </article>
+                    ))}
+                </div>
+            </section>
         </main>
     );
 }

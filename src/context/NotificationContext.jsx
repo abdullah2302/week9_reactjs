@@ -29,7 +29,11 @@ export function NotificationProvider({ children }) {
         loadNotifications();
 
         const token = localStorage.getItem("token");
-        const apiUrl = import.meta.env.VITE_API_URL;
+        const apiUrl =
+            import.meta.env.VITE_API_URL ||
+            (window.location.hostname.endsWith("vercel.app")
+                ? "https://wee9-backend.onrender.com/api"
+                : "http://localhost:5000/api");
         const socketUrl = apiUrl
             ? new URL(apiUrl, window.location.origin).origin
             : window.location.origin;
@@ -37,6 +41,7 @@ export function NotificationProvider({ children }) {
 
         socket.on("connect", loadNotifications);
         socket.on("notification:new", (notification) => {
+            if (!notification?._id) return;
             setNotifications((current) => [
                 notification,
                 ...current.filter((item) => item._id !== notification._id),
