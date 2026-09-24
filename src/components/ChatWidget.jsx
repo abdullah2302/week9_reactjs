@@ -396,7 +396,7 @@ function ChatWidget() {
                                                         }`}
                                                 >
                                                     {isMine
-                                                        ? "You · Sent"
+                                                        ? "You ·"
                                                         : `${message.sender.name} ·`}
                                                 </span>
                                                 <span className="normal-case tracking-normal">
