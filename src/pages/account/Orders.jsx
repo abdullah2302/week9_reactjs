@@ -1,46 +1,45 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ordersApi } from "../../api/ordersApi";
 import { reviewsApi } from "../../api/reviewsApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
 import OrderStatusBadge from "../../components/OrderStatusBadge";
 import ReviewModal from "../../components/ReviewModal";
+import { queryKeys } from "../../lib/queryKeys";
 
 function Orders() {
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-    const [reviewedKeys, setReviewedKeys] = useState(new Set());
     const [reviewTarget, setReviewTarget] = useState(null);
+    const requestParams = { page: pagination.page, limit: 10 };
+    const ordersQuery = useQuery({
+        queryKey: queryKeys.orders.mine(requestParams),
+        queryFn: () => ordersApi.getMyOrders(requestParams),
+        placeholderData: (previous) => previous,
+    });
+    const reviewsQuery = useQuery({
+        queryKey: queryKeys.reviews.mine,
+        queryFn: reviewsApi.getMyReviews,
+    });
+    const orders = ordersQuery.data?.orders || [];
+    const visiblePagination = ordersQuery.data?.pagination || pagination;
+    const reviewedKeys = new Set(
+        (reviewsQuery.data || []).map((review) => `${review.order}:${review.product}`)
+    );
 
-    useEffect(() => {
-        const loadOrders = async () => {
-            try {
-                const [data, reviews] = await Promise.all([
-                    ordersApi.getMyOrders({ page: pagination.page, limit: 10 }),
-                    reviewsApi.getMyReviews(),
-                ]);
-                setOrders(data.orders);
-                setPagination(data.pagination);
-                setReviewedKeys(new Set(reviews.map((review) => `${review.order}:${review.product}`)));
-            } catch (error) {
-                toast.error(
-                    error.response?.data?.message ||
-                    "Failed to load orders"
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadOrders();
-    }, [pagination.page]);
-
-    if (loading) {
+    if (ordersQuery.isPending || reviewsQuery.isPending) {
         return (
             <div className="py-10 text-center text-sm text-slate-500">
                 Loading orders...
+            </div>
+        );
+    }
+
+    if (ordersQuery.isError || reviewsQuery.isError) {
+        return (
+            <div className="py-10 text-center text-sm text-red-500">
+                Failed to load your orders. Please try again.
             </div>
         );
     }
@@ -141,8 +140,8 @@ function Orders() {
                 </div>
             )}
             <Pagination
-                page={pagination.page}
-                totalPages={pagination.totalPages}
+                page={visiblePagination.page}
+                totalPages={visiblePagination.totalPages}
                 onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
             />
             {reviewTarget && (
@@ -151,7 +150,6 @@ function Orders() {
                     product={reviewTarget.product}
                     onClose={() => setReviewTarget(null)}
                     onSubmitted={() => {
-                        setReviewedKeys((current) => new Set([...current, `${reviewTarget.orderId}:${reviewTarget.product._id}`]));
                         setReviewTarget(null);
                         toast.success("Review submitted");
                     }}

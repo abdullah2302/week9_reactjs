@@ -1,9 +1,11 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ordersApi } from "../../api/ordersApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
 import { getOrderStatusSelectClass } from "../../components/OrderStatusBadge";
+import { queryKeys } from "../../lib/queryKeys";
 
 const statuses = [
     "pending",
@@ -14,61 +16,53 @@ const statuses = [
 ];
 
 function AdminOrders() {
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-
-    useEffect(() => {
-        loadOrders();
-    }, [pagination.page]);
-
-    const loadOrders = async () => {
-        try {
-            const data = await ordersApi.getAllOrders({ page: pagination.page, limit: 10 });
-            setOrders(data.orders);
-            setPagination(data.pagination);
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Failed to load orders"
+    const queryClient = useQueryClient();
+    const requestParams = { page: pagination.page, limit: 10 };
+    const ordersQuery = useQuery({
+        queryKey: queryKeys.orders.all(requestParams),
+        queryFn: () => ordersApi.getAllOrders(requestParams),
+        placeholderData: (previous) => previous,
+    });
+    const orders = ordersQuery.data?.orders || [];
+    const visiblePagination = ordersQuery.data?.pagination || pagination;
+    const statusMutation = useMutation({
+        mutationFn: ({ id, status }) => ordersApi.updateStatus(id, status),
+        onMutate: async ({ id, status }) => {
+            await queryClient.cancelQueries({ queryKey: queryKeys.orders.all(requestParams) });
+            const previous = queryClient.getQueryData(queryKeys.orders.all(requestParams));
+            queryClient.setQueryData(queryKeys.orders.all(requestParams), (current) =>
+                current
+                    ? { ...current, orders: current.orders.map((order) =>
+                        order._id === id ? { ...order, status } : order
+                    ) }
+                    : current
             );
-        } finally {
-            setLoading(false);
-        }
-    };
+            return { previous };
+        },
+        onError: (error, _variables, context) => {
+            queryClient.setQueryData(queryKeys.orders.all(requestParams), context?.previous);
+            toast.error(error.response?.data?.message || "Failed to update status");
+        },
+        onSuccess: () => toast.success("Order status updated"),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: ["orders"] }),
+    });
 
-    const handleStatusChange = async (id, status) => {
-        try {
-            const response =
-                await ordersApi.updateStatus(
-                    id,
-                    status
-                );
-
-            setOrders((prev) =>
-                prev.map((order) =>
-                    order._id === id
-                        ? response.order
-                        : order
-                )
-            );
-
-            toast.success(
-                "Order status updated"
-            );
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Failed to update status"
-            );
-        }
-    };
-
-    if (loading) {
+    if (ordersQuery.isPending) {
         return (
             <main className="mx-auto max-w-6xl px-4 py-14">
                 <p className="text-center text-sm text-slate-500">
                     Loading orders...
+                </p>
+            </main>
+        );
+    }
+
+    if (ordersQuery.isError) {
+        return (
+            <main className="mx-auto max-w-6xl px-4 py-14">
+                <p className="text-center text-sm text-red-500">
+                    Failed to load orders. Please try again.
                 </p>
             </main>
         );
@@ -120,10 +114,10 @@ function AdminOrders() {
                                 <select
                                     value={order.status}
                                     onChange={(e) =>
-                                        handleStatusChange(
-                                            order._id,
-                                            e.target.value
-                                        )
+                                        statusMutation.mutate({
+                                            id: order._id,
+                                            status: e.target.value,
+                                        })
                                     }
                                     className={`rounded-lg border-0 px-3 py-2 text-sm capitalize outline-none ${getOrderStatusSelectClass(order.status)}`}
                                 >
@@ -210,8 +204,8 @@ function AdminOrders() {
                 </div>
             )}
             <Pagination
-                page={pagination.page}
-                totalPages={pagination.totalPages}
+                page={visiblePagination.page}
+                totalPages={visiblePagination.totalPages}
                 onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
             />
         </main>

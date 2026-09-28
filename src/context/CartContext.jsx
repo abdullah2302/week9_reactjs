@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cartApi } from "../api/cartApi";
 import { useAuth } from "./AuthContext";
+import { queryKeys } from "../lib/queryKeys";
 
 const CartContext = createContext(null);
 
@@ -12,57 +14,74 @@ function flattenItem(item) {
 
 export function CartProvider({ children }) {
     const { isAuthenticated } = useAuth();
-    const [cartItems, setCartItems] = useState([]);
+    const queryClient = useQueryClient();
     const quantityRequests = useRef(new Map());
+    const { data } = useQuery({
+        queryKey: queryKeys.cart,
+        queryFn: cartApi.get,
+        enabled: isAuthenticated,
+    });
+    const cartItems = isAuthenticated
+        ? (data?.items || []).map(flattenItem)
+        : [];
 
-    // Load the cart from the API whenever auth state changes — on login,
-    // fetch the user's saved cart; on logout, clear it locally.
     useEffect(() => {
-        if (!isAuthenticated) {
-            setCartItems([]);
-            return;
-        }
+        if (!isAuthenticated) queryClient.removeQueries({ queryKey: queryKeys.cart });
+    }, [isAuthenticated, queryClient]);
 
-        cartApi
-            .get()
-            .then((cart) => setCartItems((cart.items || []).map(flattenItem)))
-            .catch(() => setCartItems([]));
-    }, [isAuthenticated]);
+    const addMutation = useMutation({
+        mutationFn: (product) => cartApi.add(product._id || product.id, 1),
+        onSuccess: (cart) => queryClient.setQueryData(queryKeys.cart, cart),
+    });
+    const removeMutation = useMutation({
+        mutationFn: cartApi.remove,
+        onSuccess: (cart) => queryClient.setQueryData(queryKeys.cart, cart),
+    });
+    const updateMutation = useMutation({
+        mutationFn: ({ id, qty }) => cartApi.updateQty(id, qty),
+        onMutate: async ({ id, qty }) => {
+            await queryClient.cancelQueries({ queryKey: queryKeys.cart });
+            const previousCart = queryClient.getQueryData(queryKeys.cart);
+            queryClient.setQueryData(queryKeys.cart, (current) =>
+                current
+                    ? {
+                        ...current,
+                        items: qty === 0
+                            ? current.items.filter((item) => item.product?._id !== id)
+                            : current.items.map((item) =>
+                                item.product?._id === id ? { ...item, qty } : item
+                            ),
+                    }
+                    : current
+            );
+            return { previousCart };
+        },
+        onSuccess: (cart) => queryClient.setQueryData(queryKeys.cart, cart),
+        onError: (_error, _variables, context) => {
+            queryClient.setQueryData(queryKeys.cart, context?.previousCart);
+        },
+        onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.cart }),
+    });
+    const clearMutation = useMutation({
+        mutationFn: cartApi.clear,
+        onSuccess: (cart) => queryClient.setQueryData(queryKeys.cart, cart),
+    });
 
     async function addToCart(product) {
-        const cart = await cartApi.add(product._id || product.id, 1);
-        setCartItems((cart.items || []).map(flattenItem));
+        return addMutation.mutateAsync(product);
     }
 
     async function removeFromCart(id) {
-        const cart = await cartApi.remove(id);
-        setCartItems((cart.items || []).map(flattenItem));
+        return removeMutation.mutateAsync(id);
     }
 
     async function updateQty(id, qty) {
         if (qty < 0) return;
 
-        // Update the counter immediately; the request is persisted in order below.
-        setCartItems((current) => {
-            if (qty === 0) {
-                return current.filter((item) => item.id !== id);
-            }
-
-            return current.map((item) =>
-                item.id === id ? { ...item, qty } : item
-            );
-        });
-
         const previousRequest = quantityRequests.current.get(id) || Promise.resolve();
         const request = previousRequest
             .catch(() => undefined)
-            .then(() => cartApi.updateQty(id, qty))
-            .catch(async () => {
-                // Restore the server state if an optimistic update fails.
-                const cart = await cartApi.get();
-                setCartItems((cart.items || []).map(flattenItem));
-            });
-
+            .then(() => updateMutation.mutateAsync({ id, qty }));
         quantityRequests.current.set(id, request);
         await request;
 
@@ -72,8 +91,7 @@ export function CartProvider({ children }) {
     }
 
     async function clearCart() {
-        const cart = await cartApi.clear();
-        setCartItems((cart.items || []).map(flattenItem));
+        return clearMutation.mutateAsync();
     }
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);

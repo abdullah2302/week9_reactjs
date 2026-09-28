@@ -1,30 +1,21 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "../api/productsApi";
-import ProductForm from "../components/ProductForm";
 import FilterBar from "../components/FilterBar";
 import ProductList from "../components/ProductList";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import Pagination from "../components/Pagination";
+import { queryKeys } from "../lib/queryKeys";
 function normalize(product) {
     return { ...product, id: product._id };
-}
-
-
-const productsCache = new Map();
-
-function cacheKey(params) {
-    return JSON.stringify(params);
 }
 
 function Products() {
     const { user } = useAuth();
     const { addToCart } = useCart();
-    const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState(["All"]);
+    const queryClient = useQueryClient();
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -47,53 +38,28 @@ function Products() {
         [pagination.page, debouncedSearch, categoryFilter]
     );
 
-    useEffect(() => {
-        const controller = new AbortController();
-        const key = cacheKey(requestParams);
-        const cached = productsCache.get(key);
+    const {
+        data,
+        isPending,
+        isError,
+        error,
+    } = useQuery({
+        queryKey: queryKeys.products.list(requestParams),
+        queryFn: ({ signal }) => productsApi.getAll(requestParams, { signal }),
+        placeholderData: keepPreviousData,
+    });
 
-        if (cached) {
-          
-            setProducts(cached.products.map(normalize));
-            setCategories(["All", ...cached.categories]);
-            setPagination(cached.pagination);
-            setError("");
-            setLoading(false);
-        } else {
-            setLoading(true);
-            setError("");
-        }
+    const products = data?.products?.map(normalize) || [];
+    const categories = ["All", ...(data?.categories || [])];
+    const visiblePagination = data?.pagination || pagination;
+    const deleteProductMutation = useMutation({
+        mutationFn: productsApi.remove,
+        onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
+    });
 
-        productsApi
-            .getAll(requestParams, { signal: controller.signal })
-            .then((data) => {
-                productsCache.set(key, data);
-                setProducts(data.products.map(normalize));
-                setCategories(["All", ...data.categories]);
-                setPagination(data.pagination);
-            })
-            .catch((err) => {
-                if (err.name !== "CanceledError" && err.name !== "AbortError") {
-                    
-                    if (!cached) setError(err.message);
-                }
-            })
-            .finally(() => setLoading(false));
-
-        return () => controller.abort();
-    }, [requestParams]);
-
-    const handleAddProduct = useCallback(async (newProduct) => {
-        const created = await productsApi.create(newProduct);
-        setProducts((prev) => [...prev, normalize(created)]);
-        productsCache.clear(); // stale now — next visit should refetch
-    }, []);
-
-    const handleDeleteProduct = useCallback(async (id) => {
-        await productsApi.remove(id);
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-        productsCache.clear();
-    }, []);
+    const handleDeleteProduct = useCallback((id) => {
+        deleteProductMutation.mutate(id);
+    }, [deleteProductMutation]);
 
     const handleCategoryChange = useCallback((category) => {
         setCategoryFilter(category);
@@ -106,12 +72,12 @@ function Products() {
     }, []);
 
     useEffect(() => {
-        document.title = `Products (${pagination.total}) · Shoply`;
+        document.title = `Products (${visiblePagination.total}) · Shoply`;
 
         return () => {
             document.title = "Shoply";
         };
-    }, [pagination.total]);
+    }, [visiblePagination.total]);
 
 
 
@@ -132,16 +98,16 @@ function Products() {
                 onSearchChange={handleSearchChange}
             />
 
-            {loading ? (
+            {isPending ? (
                 <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                     Loading products...
                 </p>
-            ) : error ? (
-                <p className="py-10 text-center text-sm text-red-500">{error}</p>
+            ) : isError ? (
+                <p className="py-10 text-center text-sm text-red-500">{error.message}</p>
             ) : (
                 <>
                     <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
-                        Showing {products.length} of {pagination.total} products
+                        Showing {products.length} of {visiblePagination.total} products
                     </p>
 
                     <ProductList
@@ -154,8 +120,8 @@ function Products() {
                         }
                     />
                     <Pagination
-                        page={pagination.page}
-                        totalPages={pagination.totalPages}
+                        page={visiblePagination.page}
+                        totalPages={visiblePagination.totalPages}
                         onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
                     />
                 </>

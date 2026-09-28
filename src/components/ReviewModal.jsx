@@ -1,32 +1,38 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { reviewsApi } from "../api/reviewsApi";
+import { queryKeys } from "../lib/queryKeys";
 
 function ReviewModal({ orderId, product, onClose, onSubmitted }) {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
-    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const queryClient = useQueryClient();
+    const submitMutation = useMutation({
+        mutationFn: reviewsApi.create,
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.reviews.product(product._id || product.id) }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.reviews.mine }),
+            ]);
+            onSubmitted();
+        },
+        onError: (requestError) => {
+            setError(requestError.response?.data?.message || "Unable to submit review");
+        },
+    });
 
     async function handleSubmit(event) {
         event.preventDefault();
-        setSubmitting(true);
         setError("");
-
-        try {
-            await reviewsApi.create({
-                orderId,
-                productId: product._id || product.id,
-                rating,
-                comment,
-            });
-            onSubmitted();
-        } catch (requestError) {
-            setError(requestError.response?.data?.message || "Unable to submit review");
-        } finally {
-            setSubmitting(false);
-        }
+        submitMutation.mutate({
+            orderId,
+            productId: product._id || product.id,
+            rating,
+            comment,
+        });
     }
 
     return (
@@ -61,8 +67,8 @@ function ReviewModal({ orderId, product, onClose, onSubmitted }) {
                     <textarea value={comment} onChange={(event) => setComment(event.target.value)} required maxLength={2000} rows={5} placeholder="Share your experience..." className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-transparent p-3 text-sm outline-none focus:border-slate-500 dark:border-slate-700 dark:text-white" />
                 </label>
                 {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-                <button disabled={submitting} className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-white dark:text-slate-900">
-                    {submitting ? "Submitting..." : "Submit Review"}
+                <button disabled={submitMutation.isPending} className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-white dark:text-slate-900">
+                    {submitMutation.isPending ? "Submitting..." : "Submit Review"}
                 </button>
             </form>
         </div>

@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { wishlistApi } from "../api/wishlistApi";
 import { useAuth } from "./AuthContext";
+import { queryKeys } from "../lib/queryKeys";
 
 const WishlistContext = createContext(null);
 
@@ -10,30 +12,35 @@ function normalizeProduct(p) {
 
 export function WishlistProvider({ children }) {
     const { isAuthenticated } = useAuth();
-    const [wishlistItems, setWishlistItems] = useState([]);
+    const queryClient = useQueryClient();
+    const { data } = useQuery({
+        queryKey: queryKeys.wishlist,
+        queryFn: wishlistApi.get,
+        enabled: isAuthenticated,
+    });
+    const wishlistItems = isAuthenticated
+        ? (data?.products || []).map(normalizeProduct)
+        : [];
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            setWishlistItems([]);
-            return;
-        }
+        if (!isAuthenticated) queryClient.removeQueries({ queryKey: queryKeys.wishlist });
+    }, [isAuthenticated, queryClient]);
 
-        wishlistApi
-            .get()
-            .then((wl) =>
-                setWishlistItems((wl.products || []).map(normalizeProduct))
-            )
-            .catch(() => setWishlistItems([]));
-    }, [isAuthenticated]);
+    const addMutation = useMutation({
+        mutationFn: (product) => wishlistApi.add(product._id || product.id),
+        onSuccess: (wishlist) => queryClient.setQueryData(queryKeys.wishlist, wishlist),
+    });
+    const removeMutation = useMutation({
+        mutationFn: wishlistApi.remove,
+        onSuccess: (wishlist) => queryClient.setQueryData(queryKeys.wishlist, wishlist),
+    });
 
     async function addToWishlist(product) {
-        const wl = await wishlistApi.add(product._id || product.id);
-        setWishlistItems((wl.products || []).map(normalizeProduct));
+        return addMutation.mutateAsync(product);
     }
 
     async function removeFromWishlist(id) {
-        const wl = await wishlistApi.remove(id);
-        setWishlistItems((wl.products || []).map(normalizeProduct));
+        return removeMutation.mutateAsync(id);
     }
 
     function isInWishlist(id) {

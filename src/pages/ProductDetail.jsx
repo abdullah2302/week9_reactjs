@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCartPlus, faCircleExclamation, faComments, faHeart, faStar } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
 import EmptyState from "../components/EmptyState";
+import { queryKeys } from "../lib/queryKeys";
 
 function ProductDetail() {
     const { id } = useParams();
@@ -18,30 +20,22 @@ function ProductDetail() {
     const { isAuthenticated, user } = useAuth();
     const isAdmin = user?.role === "admin";
 
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
-    const [reviewData, setReviewData] = useState({ reviews: [], summary: { average: 0, total: 0, distribution: [] } });
-
-    useEffect(() => {
-        setLoading(true);
-        setNotFound(false);
-
-        productsApi
-            .getById(id)
-            .then((data) => setProduct({ ...data, id: data._id }))
-            .catch(() => setNotFound(true))
-            .finally(() => setLoading(false));
-    }, [id]);
-
-    useEffect(() => {
-        if (!product) return;
-
-        reviewsApi
-            .getProductReviews(product.id)
-            .then(setReviewData)
-            .catch(() => setReviewData({ reviews: [], summary: { average: 0, total: 0, distribution: [] } }));
-    }, [product]);
+    const productQuery = useQuery({
+        queryKey: queryKeys.products.detail(id),
+        queryFn: () => productsApi.getById(id),
+        enabled: Boolean(id),
+        select: (data) => ({ ...data, id: data._id }),
+    });
+    const product = productQuery.data;
+    const reviewQuery = useQuery({
+        queryKey: queryKeys.reviews.product(id),
+        queryFn: () => reviewsApi.getProductReviews(id),
+        enabled: Boolean(product),
+    });
+    const reviewData = reviewQuery.data || {
+        reviews: [],
+        summary: { average: 0, total: 0, distribution: [] },
+    };
 
     const cartItem = product
         ? cartItems.find((item) => item.id === product.id)
@@ -114,7 +108,7 @@ const handleAddToCart = useCallback(() => {
         };
     }, [product]);
 
-    if (loading) {
+    if (productQuery.isPending) {
         return (
             <p className="py-24 text-center text-sm text-slate-400 dark:text-slate-500">
                 Loading...
@@ -122,7 +116,7 @@ const handleAddToCart = useCallback(() => {
         );
     }
 
-    if (notFound || !product) {
+    if (productQuery.isError || !product) {
         return (
             <EmptyState>
                 <FontAwesomeIcon

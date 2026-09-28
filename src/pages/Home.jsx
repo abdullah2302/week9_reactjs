@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Hero from "../components/Hero";
 import { productsApi } from "../api/productsApi";
 import ProductCard from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
+import { queryKeys } from "../lib/queryKeys";
 
 // Mongo documents use _id — flatten to id so ProductCard keeps working.
 function normalize(product) {
@@ -12,26 +13,14 @@ function normalize(product) {
 
 function Home() {
     const { addToCart } = useCart();
-    const [featured, setFeatured] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        // Only ask the API for the first 4 — no point fetching every
-        // product just to slice it down client-side.
-        productsApi
-            .getAll({ page: 1, limit: 4 }, { signal: controller.signal })
-            .then((data) => setFeatured(data.products.map(normalize)))
-            .catch((err) => {
-                if (err.name !== "CanceledError" && err.name !== "AbortError") {
-                    setFeatured([]);
-                }
-            })
-            .finally(() => setLoading(false));
-
-        return () => controller.abort();
-    }, []);
+    const { data, isPending, isError } = useQuery({
+        queryKey: queryKeys.products.list({ page: 1, limit: 4 }),
+        queryFn: ({ signal }) => productsApi.getAll(
+            { page: 1, limit: 4 },
+            { signal }
+        ),
+    });
+    const featured = data?.products?.map(normalize) || [];
 
     return (
         <>
@@ -51,11 +40,11 @@ function Home() {
                     </Link>
                 </div>
 
-                {loading ? (
+                {isPending ? (
                     <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                         Loading products...
                     </p>
-                ) : featured.length === 0 ? (
+                ) : isError || featured.length === 0 ? (
                     <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                         No products available right now.
                     </p>

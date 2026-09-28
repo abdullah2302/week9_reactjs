@@ -1,5 +1,6 @@
 
 import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,9 +21,21 @@ function Checkout() {
         clearCart,
     } = useCart();
     const navigate = useNavigate();
-    const [placingOrder, setPlacingOrder] = useState(false);
+    const queryClient = useQueryClient();
     const shipping = cartTotal >= 100 ? 0 : 10;
     const total = cartTotal + shipping;
+    const orderMutation = useMutation({
+        mutationFn: ordersApi.create,
+        onSuccess: async (response) => {
+            await queryClient.invalidateQueries({ queryKey: ["orders"] });
+            toast.success(response.message || "Order placed successfully!");
+            await clearCart();
+            navigate("/");
+        },
+        onError: (error) => {
+            toast.error(error.response?.data?.message || "Failed to place order");
+        },
+    });
     const [formData, setFormData] = useState({
         email: "",
         firstName: "",
@@ -63,10 +76,7 @@ function Checkout() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            setPlacingOrder(true);
-
-            const orderData = {
+        const orderData = {
                 items: cartItems.map((item) => ({
                     product: item.id,
                     name: item.name,
@@ -90,23 +100,9 @@ function Checkout() {
                 subtotal: cartTotal,
                 shipping,
                 total,
-            };
+        };
 
-            const response = await ordersApi.create(orderData);
-
-            toast.success(response.message || "Order placed successfully!");
-
-            clearCart();
-
-            navigate("/");
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Failed to place order"
-            );
-        } finally {
-            setPlacingOrder(false);
-        }
+        orderMutation.mutate(orderData);
     };
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -351,6 +347,7 @@ function Checkout() {
 
                         <button
                             type="submit"
+                            disabled={orderMutation.isPending}
                             className="mt-8 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 py-3.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                         >
                             <FontAwesomeIcon icon={faLock} />

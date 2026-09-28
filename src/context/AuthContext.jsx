@@ -1,61 +1,64 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/authApi";
+import { queryKeys } from "../lib/queryKeys";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+    const hasToken = Boolean(localStorage.getItem("token"));
+    const { data, isPending, isError } = useQuery({
+        queryKey: queryKeys.auth.me,
+        queryFn: authApi.getMe,
+        enabled: hasToken,
+        retry: false,
+        staleTime: 5 * 60 * 1000,
+    });
 
-    // On first load, if a token is saved from a previous session, verify
-    // it against the API and restore the user — otherwise the app would
-    // "forget" a logged-in user on every page refresh.
+    const user = data?.user || null;
+
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            setLoading(false);
-            return;
-        }
+        if (isError) localStorage.removeItem("token");
+    }, [isError]);
 
-        authApi
-            .getMe()
-            .then((data) => setUser(data.user))
-            .catch(() => localStorage.removeItem("token"))
-            .finally(() => setLoading(false));
-    }, []);
+    const authMutation = useMutation({
+        mutationFn: ({ action, name, email, password }) =>
+            action === "signup"
+                ? authApi.signup(name, email, password)
+                : authApi.login(email, password),
+        onSuccess: (result) => {
+            localStorage.setItem("token", result.token);
+            queryClient.setQueryData(queryKeys.auth.me, { user: result.user });
+        },
+    });
 
     async function signup(name, email, password) {
-        let data;
         try {
-            data = await authApi.signup(name, email, password);
+            await authMutation.mutateAsync({ action: "signup", name, email, password });
         } catch (error) {
             throw new Error(error.response?.data?.message || "Unable to create account");
         }
-        localStorage.setItem("token", data.token);
-        setUser(data.user);
     }
 
     async function login(email, password) {
-        let data;
         try {
-            data = await authApi.login(email, password);
+            await authMutation.mutateAsync({ action: "login", email, password });
         } catch (error) {
             throw new Error(error.response?.data?.message || "Invalid email or password");
         }
-        localStorage.setItem("token", data.token);
-        setUser(data.user);
     }
 
     function logout() {
         localStorage.removeItem("token");
-        setUser(null);
+        queryClient.removeQueries({ queryKey: ["auth"] });
     }
 
     const isAuthenticated = user !== null;
 
     return (
         <AuthContext.Provider
-            value={{ user, loading, signup, login, logout, isAuthenticated }}
+            value={{ user, loading: hasToken && isPending, signup, login, logout, isAuthenticated }}
         >
             {children}
         </AuthContext.Provider>

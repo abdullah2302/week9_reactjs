@@ -1,37 +1,37 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { productsApi } from "../../api/productsApi";
 import ProductForm from "../../components/ProductForm";
 import ProductList from "../../components/ProductList";
+import { queryKeys } from "../../lib/queryKeys";
 
 function normalize(product) {
     return { ...product, id: product._id };
 }
 
+const adminProductsKey = queryKeys.products.list({ page: 1, limit: 48 });
+
 function AdminProducts() {
-    const [products, setProducts] = useState([]);
     const [editingProduct, setEditingProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    async function loadProducts() {
-        try {
-            const data = await productsApi.getAll({ page: 1, limit: 48 });
-            setProducts(data.products.map(normalize));
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to load products");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        loadProducts();
-    }, []);
+    const queryClient = useQueryClient();
+    const { data, isPending, isError, error } = useQuery({
+        queryKey: adminProductsKey,
+        queryFn: () => productsApi.getAll({ page: 1, limit: 48 }),
+    });
+    const products = data?.products?.map(normalize) || [];
+    const createMutation = useMutation({
+        mutationFn: productsApi.create,
+        onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
+    });
+    const updateMutation = useMutation({
+        mutationFn: ({ id, product }) => productsApi.update(id, product),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
+    });
 
     async function handleCreate(product) {
         try {
-            const created = await productsApi.create(product);
-            setProducts((current) => [normalize(created), ...current]);
+            await createMutation.mutateAsync(product);
             toast.success("Product added");
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to add product");
@@ -40,10 +40,7 @@ function AdminProducts() {
 
     async function handleUpdate(productData) {
         try {
-            const updated = await productsApi.update(editingProduct.id, productData);
-            setProducts((current) => current.map((product) =>
-                product.id === editingProduct.id ? normalize(updated) : product
-            ));
+            await updateMutation.mutateAsync({ id: editingProduct.id, product: productData });
             setEditingProduct(null);
             toast.success("Product updated");
         } catch (error) {
@@ -51,17 +48,35 @@ function AdminProducts() {
         }
     }
 
-    async function handleDelete(id) {
+    const deleteMutation = useMutation({
+        mutationFn: productsApi.remove,
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey: adminProductsKey });
+            const previousData = queryClient.getQueryData(adminProductsKey);
+            queryClient.setQueryData(adminProductsKey, (current) =>
+                current
+                    ? { ...current, products: current.products.filter((product) => product._id !== id) }
+                    : current
+            );
+            return { previousData };
+        },
+        onError: (error, _id, context) => {
+            queryClient.setQueryData(adminProductsKey, context?.previousData);
+            toast.error(error.response?.data?.message || "Failed to delete product");
+        },
+        onSuccess: () => {
+            toast.success("Product deleted");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+        },
+    });
+
+    function handleDelete(id) {
         if (!window.confirm("Delete this product?")) return;
 
-        try {
-            await productsApi.remove(id);
-            setProducts((current) => current.filter((product) => product.id !== id));
-            if (editingProduct?.id === id) setEditingProduct(null);
-            toast.success("Product deleted");
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to delete product");
-        }
+        if (editingProduct?.id === id) setEditingProduct(null);
+        deleteMutation.mutate(id);
     }
 
     return (
@@ -77,8 +92,12 @@ function AdminProducts() {
                 onCancel={() => setEditingProduct(null)}
             />
 
-            {loading ? (
+            {isPending ? (
                 <p className="py-10 text-center text-sm text-slate-500">Loading products...</p>
+            ) : isError ? (
+                <p className="py-10 text-center text-sm text-red-500">
+                    {error.response?.data?.message || "Failed to load products"}
+                </p>
             ) : (
                 <ProductList
                     products={products}

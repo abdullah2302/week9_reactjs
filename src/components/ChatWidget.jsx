@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComments, faPaperPlane, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../context/AuthContext";
 import { chatApi } from "../api/chatApi";
+import { queryKeys } from "../lib/queryKeys";
 
 function getEntityId(value) {
     if (!value) return "";
@@ -14,15 +16,17 @@ function getEntityId(value) {
     return String(value);
 }
 
+const EMPTY_MESSAGES = [];
+const EMPTY_CONVERSATIONS = [];
+
 function ChatWidget() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
+    const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const [draft, setDraft] = useState("");
-    const [messages, setMessages] = useState([]);
-    const [conversations, setConversations] = useState([]);
-    const [conversationSearch, setConversationSearch] = useState("");
     const [activeCustomer, setActiveCustomer] = useState(null);
+    const [conversationSearch, setConversationSearch] = useState("");
     const [productContext, setProductContext] = useState(null);
     const [adminsOnline, setAdminsOnline] = useState(false);
     const [onlineUserIds, setOnlineUserIds] = useState([]);
@@ -35,6 +39,25 @@ function ChatWidget() {
     const messagesEndRef = useRef(null);
     const isAdmin = user?.role === "admin";
     const currentUserId = getEntityId(user);
+    const activeCustomerId = activeCustomer?.id;
+    const messagesQuery = useQuery({
+        queryKey: queryKeys.chat.messages(isAdmin ? activeCustomerId || "all" : "all"),
+        queryFn: () => chatApi.getMessages(isAdmin ? activeCustomerId : undefined),
+        enabled: isAuthenticated && (!isAdmin || Boolean(activeCustomerId)),
+    });
+    const conversationsQuery = useQuery({
+        queryKey: queryKeys.chat.conversations,
+        queryFn: chatApi.getConversations,
+        enabled: isAuthenticated && isAdmin,
+    });
+    const messages = messagesQuery.data ?? EMPTY_MESSAGES;
+    const conversations = conversationsQuery.data ?? EMPTY_CONVERSATIONS;
+    const markReadMutation = useMutation({
+        mutationFn: (customerId) => chatApi.markRead(isAdmin ? customerId : "all"),
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["chat"] });
+        },
+    });
 
     function formatMessageTime(value) {
         if (!value) return "";
@@ -49,40 +72,8 @@ function ChatWidget() {
         return apiUrl ? new URL(apiUrl, window.location.origin).origin : window.location.origin;
     }, []);
 
-    async function loadConversation(customerId, markAsRead = false) {
-        try {
-            const data = await chatApi.getMessages(customerId);
-
-            if (markAsRead) {
-                await chatApi.markRead(isAdmin ? customerId : "all");
-                setMessages(
-                    data.map((message) =>
-                        getEntityId(message.sender) === currentUserId
-                            ? message
-                            : { ...message, read: true }
-                    )
-                );
-            } else {
-                setMessages(data);
-            }
-        } catch {
-            setError("Unable to load chat history.");
-        }
-    }
-
-    async function loadInbox() {
-        try {
-            setConversations(await chatApi.getConversations());
-        } catch {
-            setError("Unable to load customer conversations.");
-        }
-    }
-
     useEffect(() => {
         if (!isAuthenticated) return undefined;
-
-        if (isAdmin) loadInbox();
-        else loadConversation();
 
         const socket = io(socketUrl, {
             auth: { token: localStorage.getItem("token") },
@@ -93,8 +84,7 @@ function ChatWidget() {
 
         socket.on("connect", () => {
             setError("");
-            if (isAdmin) loadInbox();
-            else loadConversation();
+            queryClient.invalidateQueries({ queryKey: ["chat"] });
         });
         socket.on("connect_error", () => setError("Chat is reconnecting..."));
         socket.on("chat:presence", ({ adminsOnline: supportOnline, onlineUserIds: usersOnline }) => {
@@ -102,16 +92,18 @@ function ChatWidget() {
             setOnlineUserIds(usersOnline || []);
         });
         socket.on("chat:typing", ({ customerId, isTyping }) => {
-            if (!isAdmin || activeCustomer?.id === customerId) setTyping(isTyping);
+            if (!isAdmin || activeCustomerId === customerId) setTyping(isTyping);
         });
         socket.on("chat:message", (message) => {
             if (handledMessageIdsRef.current.has(message.id)) return;
             handledMessageIdsRef.current.add(message.id);
-            setMessages((current) =>
+            queryClient.setQueryData(
+                queryKeys.chat.messages(isAdmin ? activeCustomerId || "all" : "all"),
+                (current = []) =>
                 current.some((item) => item.id === message.id) ? current : [...current, message]
             );
             if (isAdmin && message.sender.role !== "admin") {
-                setConversations((current) => {
+                queryClient.setQueryData(queryKeys.chat.conversations, (current = []) => {
                     const existing = current.find((item) => item.customer.id === message.sender.id);
                     if (existing) {
                         return current.map((item) =>
@@ -135,7 +127,7 @@ function ChatWidget() {
                         ...current,
                     ];
                 });
-                if (!activeCustomer) setActiveCustomer(message.sender);
+                if (!activeCustomerId) setActiveCustomer(message.sender);
             }
         });
 
@@ -143,18 +135,18 @@ function ChatWidget() {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [isAuthenticated, isAdmin, socketUrl]);
+    }, [isAuthenticated, isAdmin, socketUrl, queryClient, activeCustomerId]);
 
     useEffect(() => {
         function handleChatOpen(event) {
             setProductContext(event.detail?.product || null);
             setIsOpen(true);
-            if (!isAdmin) loadConversation(undefined, true);
+            if (!isAdmin) markReadMutation.mutate();
         }
 
         window.addEventListener("chat:open", handleChatOpen);
         return () => window.removeEventListener("chat:open", handleChatOpen);
-    }, []);
+    }, [isAdmin, markReadMutation]);
 
     useEffect(() => {
         if (isOpen) {
@@ -199,9 +191,8 @@ function ChatWidget() {
 
     async function selectCustomer(conversation) {
         setActiveCustomer(conversation.customer);
-        setMessages([]);
-        await loadConversation(conversation.customer.id, true);
-        setConversations((current) =>
+        markReadMutation.mutate(conversation.customer.id);
+        queryClient.setQueryData(queryKeys.chat.conversations, (current = []) =>
             current.map((item) =>
                 item.customer.id === conversation.customer.id
                     ? { ...item, unreadCount: 0 }
@@ -251,7 +242,7 @@ function ChatWidget() {
         const opening = !isOpen;
         setIsOpen(opening);
         if (opening && !isAdmin) {
-            await loadConversation(undefined, true);
+            markReadMutation.mutate();
         }
     }
 
