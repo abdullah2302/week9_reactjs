@@ -25,10 +25,7 @@ export function NotificationProvider({ children }) {
 
         const token = localStorage.getItem("token");
         const apiUrl =
-            import.meta.env.VITE_API_URL ||
-            (window.location.hostname.endsWith("vercel.app")
-                ? "https://wee9-backend.onrender.com/api"
-                : "http://localhost:5000/api");
+            import.meta.env.VITE_CLIENT_ORIGIN;
         const socketUrl = apiUrl
             ? new URL(apiUrl, window.location.origin).origin
             : window.location.origin;

@@ -22,7 +22,7 @@ function Products() {
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
-            setDebouncedSearch(searchTerm.trim());
+            setDebouncedSearch(searchTerm);
         }, 350);
 
         return () => window.clearTimeout(timeoutId);
