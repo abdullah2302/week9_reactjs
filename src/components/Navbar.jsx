@@ -148,21 +148,23 @@ const notificationRef = useRef(null);
                 {/* Right Side */}
                 <div className="flex items-center gap-2">
 
-                    {/* Wishlist */}
-                    <Link
-                        to="/account/wishlist"
-                        className="hidden items-center gap-1 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white sm:flex"
-                    >
-                        <FontAwesomeIcon icon={faHeart} />
+                    {user?.role !== "admin" && (
+                        /* Wishlist */
+                        <Link
+                            to="/account/wishlist"
+                            className="hidden items-center gap-1 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white sm:flex"
+                        >
+                            <FontAwesomeIcon icon={faHeart} />
 
-                        <span>Wishlist</span>
+                            <span>Wishlist</span>
 
-                        {wishlistCount > 0 && (
-                            <span className="ml-1 rounded-full bg-red-500 px-1.5 text-xs text-white">
-                                {wishlistCount}
-                            </span>
-                        )}
-                    </Link>
+                            {wishlistCount > 0 && (
+                                <span className="ml-1 rounded-full bg-red-500 px-1.5 text-xs text-white">
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
 
                     {/* Cart */}
                     <Link
@@ -370,24 +372,26 @@ const notificationRef = useRef(null);
                         Products
                     </NavLink>
 
-                    <Link
-                        to="/account/wishlist"
-                        onClick={closeMenu}
-                        className="block py-2.5 text-base text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                    >
-                        <FontAwesomeIcon
-                            icon={faHeart}
-                            className="mr-2"
-                        />
+                    {user?.role !== "admin" && (
+                        <Link
+                            to="/account/wishlist"
+                            onClick={closeMenu}
+                            className="block py-2.5 text-base text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                        >
+                            <FontAwesomeIcon
+                                icon={faHeart}
+                                className="mr-2"
+                            />
 
-                        Wishlist
+                            Wishlist
 
-                        {wishlistCount > 0 && (
-                            <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
-                                {wishlistCount}
-                            </span>
-                        )}
-                    </Link>
+                            {wishlistCount > 0 && (
+                                <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
 
                     <NavLink
                         to="/about"

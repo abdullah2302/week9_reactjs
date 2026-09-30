@@ -193,7 +193,7 @@ const handleAddToCart = useCallback(() => {
                         </p>
                     )}
 
-                    {!inStock ? (
+                    {!inStock && !isAdmin ? (
                         <button
                             onClick={handleWishlistToggle}
                             className={`flex items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${

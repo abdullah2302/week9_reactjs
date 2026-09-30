@@ -96,7 +96,7 @@ function App() {
                         <Route
                             path="/account"
                             element={
-                                <ProtectedRoute>
+                                <ProtectedRoute customerOnly>
                                     <AccountLayout />
                                 </ProtectedRoute>
                             }

@@ -11,20 +11,21 @@ function normalizeProduct(p) {
 }
 
 export function WishlistProvider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const queryClient = useQueryClient();
+    const isCustomer = isAuthenticated && user?.role !== "admin";
     const { data } = useQuery({
         queryKey: queryKeys.wishlist,
         queryFn: wishlistApi.get,
-        enabled: isAuthenticated,
+        enabled: isCustomer,
     });
-    const wishlistItems = isAuthenticated
+    const wishlistItems = isCustomer
         ? (data?.products || []).map(normalizeProduct)
         : [];
 
     useEffect(() => {
-        if (!isAuthenticated) queryClient.removeQueries({ queryKey: queryKeys.wishlist });
-    }, [isAuthenticated, queryClient]);
+        if (!isCustomer) queryClient.removeQueries({ queryKey: queryKeys.wishlist });
+    }, [isCustomer, queryClient]);
 
     const addMutation = useMutation({
         mutationFn: (product) => wishlistApi.add(product._id || product.id),
