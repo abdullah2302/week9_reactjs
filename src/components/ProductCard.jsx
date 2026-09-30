@@ -13,7 +13,8 @@ import { toast } from "react-toastify";
 
 function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    const isAdmin = user?.role === "admin";
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -112,7 +113,7 @@ function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
                     <div className="flex items-center flex-wrap items-center justify-center gap-2">
 
                         {/* Add to Cart / Wishlist */}
-                        {onAddToCart && inStock ? (
+                        {onAddToCart && !isAdmin && inStock ? (
                             <button
                                 onClick={handleAddToCart}
                                 className="flex items-center shrink-0 gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
@@ -123,7 +124,7 @@ function ProductCard({ product, onAddToCart, onDelete, onEdit }) {
                                 />
                                 Add
                             </button>
-                        ) : onAddToCart ? (
+                        ) : onAddToCart && !isAdmin ? (
                             <button
                                 onClick={handleWishlistToggle}
                                 className={`flex items-center shrink-0 gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${

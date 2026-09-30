@@ -166,20 +166,22 @@ const notificationRef = useRef(null);
                         </Link>
                     )}
 
-                    {/* Cart */}
-                    <Link
-                        to="/cart"
-                        onClick={closeMenu}
-                        className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                    >
-                        <FontAwesomeIcon icon={faCartShopping} />
+                    {user?.role !== "admin" && (
+                        /* Cart */
+                        <Link
+                            to="/cart"
+                            onClick={closeMenu}
+                            className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                            <FontAwesomeIcon icon={faCartShopping} />
 
-                        {cartCount > 0 && (
-                            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
-                                {cartCount}
-                            </span>
-                        )}
-                    </Link>
+                            {cartCount > 0 && (
+                                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
 
                     {isAuthenticated && (
                         <div ref={notificationRef} className="relative">

@@ -13,21 +13,22 @@ function flattenItem(item) {
 }
 
 export function CartProvider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const queryClient = useQueryClient();
     const quantityRequests = useRef(new Map());
+    const isCustomer = isAuthenticated && user?.role !== "admin";
     const { data } = useQuery({
         queryKey: queryKeys.cart,
         queryFn: cartApi.get,
-        enabled: isAuthenticated,
+        enabled: isCustomer,
     });
-    const cartItems = isAuthenticated
+    const cartItems = isCustomer
         ? (data?.items || []).map(flattenItem)
         : [];
 
     useEffect(() => {
-        if (!isAuthenticated) queryClient.removeQueries({ queryKey: queryKeys.cart });
-    }, [isAuthenticated, queryClient]);
+        if (!isCustomer) queryClient.removeQueries({ queryKey: queryKeys.cart });
+    }, [isCustomer, queryClient]);
 
     const addMutation = useMutation({
         mutationFn: (product) => cartApi.add(product._id || product.id, 1),
