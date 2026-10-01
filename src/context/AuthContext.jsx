@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/authApi";
 import { queryKeys } from "../lib/queryKeys";
@@ -7,7 +7,8 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const queryClient = useQueryClient();
-    const hasToken = Boolean(localStorage.getItem("token"));
+    const [token, setToken] = useState(() => localStorage.getItem("token"));
+    const hasToken = Boolean(token);
     const { data, isPending, isError } = useQuery({
         queryKey: queryKeys.auth.me,
         queryFn: authApi.getMe,
@@ -19,8 +20,13 @@ export function AuthProvider({ children }) {
     const user = data?.user || null;
 
     useEffect(() => {
-        if (isError) localStorage.removeItem("token");
-    }, [isError]);
+        if (isError) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("loginTime");
+            setToken(null);
+            queryClient.removeQueries({ queryKey: queryKeys.auth.me });
+        }
+    }, [isError, queryClient]);
 
     const authMutation = useMutation({
         mutationFn: ({ action, name, email, password }) =>
@@ -29,6 +35,8 @@ export function AuthProvider({ children }) {
                 : authApi.login(email, password),
         onSuccess: (result) => {
             localStorage.setItem("token", result.token);
+            localStorage.setItem("loginTime", new Date().toISOString());
+            setToken(result.token);
             queryClient.setQueryData(queryKeys.auth.me, { user: result.user });
         },
     });
@@ -51,7 +59,9 @@ export function AuthProvider({ children }) {
 
     function logout() {
         localStorage.removeItem("token");
-        queryClient.removeQueries({ queryKey: ["auth"] });
+        localStorage.removeItem("loginTime");
+        setToken(null);
+        queryClient.removeQueries({ queryKey: queryKeys.auth.me });
     }
 
     const isAuthenticated = user !== null;
