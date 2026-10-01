@@ -9,6 +9,11 @@ function Wishlist() {
     const { wishlistItems, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
 
+    async function handleAddToCart(item) {
+        await addToCart(item);
+        await removeFromWishlist(item.id);
+    }
+
     if (wishlistItems.length === 0) {
         return (
             <EmptyState>
@@ -88,7 +93,7 @@ function Wishlist() {
 
                             {inStock && (
                                 <button
-                                    onClick={() => addToCart(item)}
+                                    onClick={() => handleAddToCart(item)}
                                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-400 dark:text-slate-500"
                                     title="Add to cart"
                                 >
