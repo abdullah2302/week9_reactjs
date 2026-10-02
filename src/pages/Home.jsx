@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Hero from "../components/Hero";
 import { productsApi } from "../api/productsApi";
 import ProductCard from "../components/ProductCard";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import { useCart } from "../context/CartContext";
 import { queryKeys } from "../lib/queryKeys";
 
@@ -41,9 +42,11 @@ function Home() {
                 </div>
 
                 {isPending ? (
-                    <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                        Loading products...
-                    </p>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+                        {Array.from({ length: 4 }, (_, index) => (
+                            <ProductCardSkeleton key={index} />
+                        ))}
+                    </div>
                 ) : isError || featured.length === 0 ? (
                     <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                         No products available right now.

@@ -1,18 +1,13 @@
 
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 function AdminRoute({ children }) {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return (
-            <div className="flex min-h-[50vh] items-center justify-center">
-                <p className="text-sm text-slate-500">
-                    Loading...
-                </p>
-            </div>
-        );
+        return <LoadingSkeleton rows={2} />;
     }
 
     // Not logged in

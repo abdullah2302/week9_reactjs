@@ -1,4 +1,5 @@
 
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -6,25 +7,26 @@ import ChatWidget from "./components/ChatWidget";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import LoadingSkeleton from "./components/LoadingSkeleton";
 
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Wishlist from "./pages/Wishlist";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Checkout from "./pages/Checkout";
+const Home = lazy(() => import("./pages/Home"));
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Checkout = lazy(() => import("./pages/Checkout"));
 
-import AccountLayout from "./pages/account/AccountLayout";
-import Orders from "./pages/account/Orders";
+const AccountLayout = lazy(() => import("./pages/account/AccountLayout"));
+const Orders = lazy(() => import("./pages/account/Orders"));
 
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminOrders from "./pages/admin/AdminOrders";
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 
-import NotFound from "./pages/NotFound";
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -36,7 +38,10 @@ function App() {
                 <Navbar />
 
                 <div className="flex-1">
-                    <Routes>
+                    <Suspense
+                        fallback={<LoadingSkeleton rows={4} />}
+                    >
+                        <Routes>
                         {/* PUBLIC ROUTES */}
 
                         <Route path="/" element={<Home />} />
@@ -143,7 +148,8 @@ function App() {
                             path="*"
                             element={<NotFound />}
                         />
-                    </Routes>
+                        </Routes>
+                    </Suspense>
                 </div>
 
                 <Footer />

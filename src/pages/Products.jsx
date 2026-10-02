@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { productsApi } from "../api/productsApi";
 import FilterBar from "../components/FilterBar";
 import ProductList from "../components/ProductList";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import Pagination from "../components/Pagination";
@@ -99,9 +100,11 @@ function Products() {
             />
 
             {isPending ? (
-                <p className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                    Loading products...
-                </p>
+                <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                    {Array.from({ length: 8 }, (_, index) => (
+                        <ProductCardSkeleton key={index} />
+                    ))}
+                </div>
             ) : isError ? (
                 <p className="py-10 text-center text-sm text-red-500">{error.message}</p>
             ) : (

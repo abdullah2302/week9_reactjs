@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 function ProtectedRoute({ children, customerOnly = false }) {
     const { user, isAuthenticated, loading } = useAuth();
@@ -7,7 +8,7 @@ function ProtectedRoute({ children, customerOnly = false }) {
 
     
     if (loading) {
-        return null;
+        return <LoadingSkeleton rows={2} />;
     }
 
     if (!isAuthenticated) {
