@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { productsApi } from "../../api/productsApi";
 import ProductForm from "../../components/ProductForm";
 import ProductList from "../../components/ProductList";
+import ProductCardSkeleton from "../../components/ProductCardSkeleton";
 import { queryKeys } from "../../lib/queryKeys";
 
 function normalize(product) {
@@ -93,7 +94,11 @@ function AdminProducts() {
             />
 
             {isPending ? (
-                <p className="py-10 text-center text-sm text-slate-500">Loading products...</p>
+                <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                    {Array.from({ length: 8 }, (_, index) => (
+                        <ProductCardSkeleton key={index} />
+                    ))}
+                </div>
             ) : isError ? (
                 <p className="py-10 text-center text-sm text-red-500">
                     {error.response?.data?.message || "Failed to load products"}

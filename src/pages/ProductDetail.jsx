@@ -9,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
 import EmptyState from "../components/EmptyState";
+import LoadingSkeleton from "../components/LoadingSkeleton";
 import { queryKeys } from "../lib/queryKeys";
 
 function ProductDetail() {
@@ -109,11 +110,7 @@ const handleAddToCart = useCallback(() => {
     }, [product]);
 
     if (productQuery.isPending) {
-        return (
-            <p className="py-24 text-center text-sm text-slate-400 dark:text-slate-500">
-                Loading...
-            </p>
-        );
+        return <LoadingSkeleton rows={2} />;
     }
 
     if (productQuery.isError || !product) {

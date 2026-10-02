@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
 import OrderStatusBadge from "../../components/OrderStatusBadge";
 import ReviewModal from "../../components/ReviewModal";
+import LoadingSkeleton from "../../components/LoadingSkeleton";
 import { queryKeys } from "../../lib/queryKeys";
 
 function Orders() {
@@ -29,11 +30,7 @@ function Orders() {
     );
 
     if (ordersQuery.isPending || reviewsQuery.isPending) {
-        return (
-            <div className="py-10 text-center text-sm text-slate-500">
-                Loading orders...
-            </div>
-        );
+        return <LoadingSkeleton rows={3} />;
     }
 
     if (ordersQuery.isError || reviewsQuery.isError) {

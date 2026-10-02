@@ -5,6 +5,7 @@ import { ordersApi } from "../../api/ordersApi";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination";
 import { getOrderStatusSelectClass } from "../../components/OrderStatusBadge";
+import LoadingSkeleton from "../../components/LoadingSkeleton";
 import { queryKeys } from "../../lib/queryKeys";
 
 const statuses = [
@@ -49,13 +50,7 @@ function AdminOrders() {
     });
 
     if (ordersQuery.isPending) {
-        return (
-            <main className="mx-auto max-w-6xl px-4 py-14">
-                <p className="text-center text-sm text-slate-500">
-                    Loading orders...
-                </p>
-            </main>
-        );
+        return <LoadingSkeleton rows={4} />;
     }
 
     if (ordersQuery.isError) {
