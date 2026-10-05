@@ -9,6 +9,7 @@ const CartContext = createContext(null);
 // Normalizes a backend cart item ({ product: {...}, qty }) into the flat
 // shape the rest of the UI already expects ({ id, name, price, qty, ... }).
 function flattenItem(item) {
+    if (!item?.product?._id) return null;
     return { ...item.product, id: item.product._id, qty: item.qty };
 }
 
@@ -23,7 +24,7 @@ export function CartProvider({ children }) {
         enabled: isCustomer,
     });
     const cartItems = isCustomer
-        ? (data?.items || []).map(flattenItem)
+        ? (data?.items || []).map(flattenItem).filter(Boolean)
         : [];
 
     useEffect(() => {
